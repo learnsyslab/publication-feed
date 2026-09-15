@@ -18,21 +18,21 @@ jobs:
       - name: Install Pandoc
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc pandoc-citeproc
+          sudo apt-get install -y pandoc
 
       - name: Fetch and Convert BibTeX
         run: |
           # 1. Download BibTeX file
           curl -sL -A "Mozilla/5.0" "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib" -o library.bib
 
-          # 2. Create a dummy markdown file referencing all entries
+          # 2. Create a markdown file referencing all entries
           echo '---' > refs.md
           echo 'bibliography: library.bib' >> refs.md
           echo 'nocite: "@*"' >> refs.md
           echo '---' >> refs.md
           echo '# Publications' >> refs.md
 
-          # 3. Convert to HTML using Pandoc citeproc
+          # 3. Convert to HTML using built-in citeproc
           pandoc refs.md --citeproc -t html -o index.html
 
       - name: Commit and Push HTML
