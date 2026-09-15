@@ -59,21 +59,43 @@ jobs:
           # Settings
           # ----------------------------------------------------------------------
           HIGHLIGHT = []        # surnames to bold in author lists; empty = nobody
-          # Raw HTML emitted before each year heading (the first year never gets one).
-          # Measured against the live page with a 54-probe diagnostic:
-          #   <hr> is removed in every form (plain, self-closing, uppercase, with class,
-          #   nested in a div) -- but class attributes DO survive, and an empty
-          #   <div class="ce-div"> comes through intact. The theme puts .ce-div on the
-          #   hr itself, so a div carrying the same class should pick up the same rule.
-          #   If the CSS turns out to be hr.ce-div and nothing shows, fall back to
-          #   "<p>" + "&#9472;" * 40 + "</p>", which cannot be filtered.
-          YEAR_DIVIDER = '<div class="ce-div"></div>'
+          # Drawn before each year heading (the first year never gets one). <hr> is
+          # removed by the CMS, but an empty div survives and .border-top is defined in
+          # the site stylesheet, so this renders a genuine 1px rule in the theme's own
+          # border colour (#e6e6e6). Alternative: "<p>" + "&#9472;" * 40 + "</p>".
+          YEAR_DIVIDER = '<div class="border-top mt-5 mb-4"></div>'
           LINK_TITLES = True    # wrap the title in <a> when a whitelisted URL is available
           LINK_BLANK = False    # add target="_blank" (more attributes = more to be stripped)
           SHOW_DOI = False      # also print "DOI: ..." as plain text under the entry
           SHOW_META = True      # "213 publications, updated ..." line at the top
           PROBE = False         # emit a diagnostic block at the very top (testing only)
-          LIST_TAG = "ol"       # "ol" for numbered entries, "ul" for bullets
+          YEAR_NAV = False            # row of jump links to each year, in the header card
+          TYPE_COLLAPSE = True        # type sections expand on click
+          OPEN_RECENT_YEARS = 1       # newest N years rendered already expanded
+          # The stylesheet carries a collapse pattern written specifically for curled
+          # content: inside .tx-curlcontent, any [data-bs-toggle=collapse] within an
+          # .accordion gets a full-width bordered bar, and .collapse gets a matching
+          # bordered body. A .ti-plus-circle / .ti-dash-circle pair inside the bar is
+          # swapped automatically by .collapsed, giving a +/- affordance for free.
+          # None of the .accordion-button chrome (blue fill, chevron) is involved.
+          CLS_COLLAPSE_WRAP = "accordion mb-3"
+          # .btn, not .c-button: c-button's :hover/:focus force color to white with
+          # !important while leaving the background transparent, so the label vanishes
+          # and stays vanished after a click. .btn sets --bs-btn-bg: transparent and
+          # never defines --bs-btn-hover-color, so hover leaves the text colour alone.
+          CLS_TOGGLE = "btn w-100 text-start"
+          CLS_TOGGLE_OPEN = ""                       # Bootstrap adds .collapsed itself after
+          CLS_META_BOX = "c-card c-card--box mb-4"
+          CLS_NAV_LIST = "list-inline mb-0"
+          CLS_NAV_ITEM = "list-inline-item"
+          CLS_YEAR_H = "mt-4"
+          CLS_TYPE_H = "h5 mt-4 mb-2"      # open heading, needs its own spacing
+          CLS_TYPE_H_TOGGLE = "h5"         # toggle bars stack flush, so no margin utilities
+          CLS_LIST = "list-unstyled mb-0"          # with LIST_TAG = "ol", use "mb-0" to keep numbers
+          CLS_ITEM = "border-start ps-3 mb-3"      # light rule down the left of each entry
+          CLS_TAG = "d-inline-block px-2 text-bg-light me-1"
+          CLS_TAG_AWARD = "d-inline-block px-2 text-bg-warning me-1"
+          LIST_TAG = "ul"       # "ul" with CLS_LIST list-unstyled, or "ol" for numbers
           USE_SMALL = True      # wrap the DOI line in <small>
           ASCII_ONLY = True     # emit accents as &#nnn; so encoding can never break
           INPUT_FILE = "clean_library.bib"
@@ -97,6 +119,10 @@ jobs:
           # ----------------------------------------------------------------------
           # Text helpers
           # ----------------------------------------------------------------------
+          def cls(names):
+              return ' class="%s"' % names if names else ""
+
+
           def esc(text):
               """Escape HTML, then optionally reduce to pure ASCII entities."""
               text = escape(text, quote=False)
@@ -250,84 +276,47 @@ jobs:
           # element still leaves its marker behind and can be identified from the
           # rendered page source. Set PROBE = False once the results are in.
           # ----------------------------------------------------------------------
-          PROBE_INLINE = [
-              ("T01", "b", "<b>x</b>"),
-              ("T02", "i", "<i>x</i>"),
-              ("T03", "u", "<u>x</u>"),
-              ("T04", "s", "<s>x</s>"),
-              ("T05", "strike", "<strike>x</strike>"),
-              ("T06", "del-ins", "<del>x</del><ins>y</ins>"),
-              ("T07", "sub-sup", "<sub>x</sub><sup>y</sup>"),
-              ("T08", "code", "<code>x</code>"),
-              ("T09", "kbd-samp-var", "<kbd>x</kbd><samp>y</samp><var>z</var>"),
-              ("T10", "abbr", "<abbr title=\"probe-title\">x</abbr>"),
-              ("T11", "mark", "<mark>x</mark>"),
-              ("T12", "q-cite", "<q>x</q><cite>y</cite>"),
-              ("T13", "time", "<time datetime=\"2026-01-01\">x</time>"),
-              ("T14", "span", "<span>x</span>"),
-              ("T15", "span-class", "<span class=\"probe-class\">x</span>"),
-              ("T16", "span-style", "<span style=\"color:#b00\">x</span>"),
-              ("T17", "big-tt-font", "<big>x</big><tt>y</tt><font color=\"red\">z</font>"),
-              ("T18", "nobr-wbr", "<nobr>x</nobr><wbr>"),
-              ("T19", "small-nested", "<small><em>x</em></small>"),
-              ("T20", "entities", "nbsp[&nbsp;] amp[&amp;] mdash[&#8212;] box[&#9472;] direct[\u2013 \u00f6]"),
-          ]
-
-          PROBE_LINKS = [
-              ("T21", "doi", "https://doi.org/10.1109/TAC.2025.3608258"),
-              ("T22", "arxiv", "https://arxiv.org/abs/2409.11171"),
-              ("T23", "sciencedirect", "https://www.sciencedirect.com/"),
-              ("T24", "github", "https://github.com/learnsyslab"),
-              ("T25", "youtube", "https://www.youtube.com/@learnsyslab"),
-              ("T26", "ieee", "https://ieeexplore.ieee.org/"),
-              ("T27", "tum", "https://www.ce.cit.tum.de/lsy/home/"),
-              ("T28", "githubio", "https://tum-lsy.github.io/uq_vla/"),
-              ("T29", "mailto", "mailto:office.lsy@tum.de"),
-              ("T30", "relative", "/lsy/home/"),
-              ("T31", "anchor", "#topbar"),
-          ]
-
-          PROBE_BLOCK = [
-              ("T32", "hr-plain", "<hr>"),
-              ("T33", "hr-selfclosing", "<hr />"),
-              ("T34", "hr-uppercase", "<HR>"),
-              ("T35", "hr-ce-div", "<hr class=\"ce-div\">"),
-              ("T36", "div-wrapping-hr", "<div class=\"ce-div\"><hr></div>"),
-              ("T37", "div-plain", "<div>x</div>"),
-              ("T38", "div-class-style", "<div class=\"probe-class\" id=\"probe-id\" style=\"border-top:2px solid #b00\">x</div>"),
-              ("T39", "section-article-aside", "<section>x</section><article>y</article><aside>z</aside>"),
-              ("T40", "h1-h4-h5-h6", "<h1>x</h1><h4>x</h4><h5>x</h5><h6>x</h6>"),
-              ("T41", "blockquote", "<blockquote>x</blockquote>"),
-              ("T42", "pre", "<pre>x</pre>"),
-              ("T43", "ul-li", "<ul><li>x</li></ul>"),
-              ("T44", "dl-dt-dd", "<dl><dt>x</dt><dd>y</dd></dl>"),
-              ("T45", "table", "<table><tr><td>x</td><td>y</td></tr></table>"),
-              ("T46", "figure", "<figure>x<figcaption>y</figcaption></figure>"),
-              ("T47", "details", "<details><summary>x</summary>y</details>"),
-              ("T48", "p-attrs", "<p class=\"probe-class\" id=\"probe-id\" style=\"color:#b00\" title=\"probe-title\" lang=\"en\" dir=\"ltr\" role=\"note\" data-probe=\"1\" aria-label=\"probe\">x</p>"),
-              ("T49", "ol-attrs", "<ol start=\"7\" reversed><li>x</li></ol>"),
-              ("T50", "empty-p", "<p></p>"),
-              ("T51", "nbsp-p", "<p>&nbsp;</p>"),
-              ("T52", "empty-div-span", "<div></div><span></span>"),
-              ("T53", "style-block", "<style>.probe-class{color:#b00}</style>"),
-              ("T54", "comment", "<!-- probe-comment -->"),
-          ]
+          PROBE_ACCORDION = '''<div id="probe-accordion" class="frame [ c-accordion ] accordion frame-type-textmedia frame-layout-0">
+            <div class="c-accordion__item accordion-item rounded-0">
+              <h2 id="probe-acc-a" class="c-accordion__header accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#probe-sec-a" aria-expanded="true" aria-controls="probe-sec-a">2026 (probe, should start open)</button>
+              </h2>
+              <div id="probe-sec-a" class="accordion-collapse collapse show" aria-labelledby="probe-acc-a" data-bs-parent="#probe-accordion">
+                <div class="c-accordion__body accordion-body">
+                  <h3>Journal Articles</h3>
+                  <ol><li><strong>Sample entry one</strong><br>Some Authors<br><em>Some Journal</em></li></ol>
+                </div>
+              </div>
+            </div>
+            <div class="c-accordion__item accordion-item rounded-0">
+              <h2 id="probe-acc-b" class="c-accordion__header accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#probe-sec-b" aria-expanded="false" aria-controls="probe-sec-b">2025 (probe, click to expand)</button>
+              </h2>
+              <div id="probe-sec-b" class="accordion-collapse collapse" aria-labelledby="probe-acc-b" data-bs-parent="#probe-accordion">
+                <div class="c-accordion__body accordion-body">
+                  <h3>Conference Papers</h3>
+                  <ol><li><strong>Sample entry two</strong><br>Some Authors<br><em>Some Conference</em></li></ol>
+                </div>
+              </div>
+            </div>
+          </div>'''
 
 
           def build_probe():
-              out = ["<p>PROBE-START</p>"]
-              for pid, name, html in PROBE_INLINE:
-                  out.append("<p>[%s %s] %s [/%s]</p>" % (pid, name, html, pid))
-              for pid, name, href in PROBE_LINKS:
-                  out.append('<p>[%s link-%s] <a href="%s" target="_blank" rel="noopener" '
-                             'class="probe-class" title="probe-title">x</a> [/%s]</p>'
-                             % (pid, name, href, pid))
-              for pid, name, html in PROBE_BLOCK:
-                  out.append("<p>[%s %s]</p>" % (pid, name))
-                  out.append(html)
-                  out.append("<p>[/%s]</p>" % pid)
-              out.append("<p>PROBE-END</p>")
-              return "\n".join(out)
+              return "\n".join([
+                  "<p>PROBE-START</p>",
+                  '<p>[T60 button] <button type="button" class="probe-class" '
+                  'data-bs-toggle="collapse">x</button> [/T60]</p>',
+                  "<p>[T61 accordion] two panels follow; the first should be open, "
+                  "the second should expand when clicked</p>",
+                  PROBE_ACCORDION,
+                  "<p>[/T61]</p>",
+                  "<p>PROBE-END</p>",
+              ])
+
+
+          def slug(text):
+              return re.sub(r"-+", "-", re.sub(r"[^0-9a-z]+", "-", text.lower())).strip("-")
 
 
           # ----------------------------------------------------------------------
@@ -359,90 +348,139 @@ jobs:
           # The only links are doi.org / arxiv.org / sciencedirect.com on the title.
           # Tags used: h2, h3, ol/ul, li, p, a, strong, em, small, br
           # ----------------------------------------------------------------------
+          def render_entry(entry):
+              etype = entry.get("ENTRYTYPE", "misc").lower()
+              title = esc(clean_text(entry.get("title", "Untitled")))
+              authors = fmt_authors(entry.get("author", "") or entry.get("editor", ""))
+              venue = build_venue(entry, etype)
+
+              note = clean_text(entry.get("note", ""))
+              if note and len(note) < 120:
+                  award = any(w in note.lower() for w in ("award", "medal", "prize"))
+                  venue_suffix = " <span%s><small>%s</small></span>" % (
+                      cls(CLS_TAG_AWARD if award else CLS_TAG), esc(note))
+              else:
+                  venue_suffix = ""
+
+              doi = clean_text(entry.get("doi", ""))
+              if SHOW_DOI and doi:
+                  doi = re.sub(r"^https?://(dx\.)?doi\.org/", "", doi)
+                  doi_line = "DOI: " + esc(doi)
+                  if USE_SMALL:
+                      doi_line = "<small>%s</small>" % doi_line
+              else:
+                  doi_line = ""
+
+              link = safe_link(pick_link(entry)) if LINK_TITLES else ""
+              if link:
+                  target = ' target="_blank"' if LINK_BLANK else ""
+                  head = '<a href="%s"%s><strong>%s</strong></a>' % (link, target, title)
+              else:
+                  head = "<strong>%s</strong>" % title
+                  unlinked.append((entry.get("ID", "?"),
+                                   clean_text(entry.get("year", "")),
+                                   clean_text(entry.get("title", ""))[:70]))
+
+              lines = [head]
+              if authors:
+                  lines.append(authors)
+              if venue or venue_suffix:
+                  lines.append("<small>%s</small>%s" % (venue, venue_suffix) if venue
+                               else venue_suffix.strip())
+              if doi_line:
+                  lines.append(doi_line)
+
+              return "  <li%s>%s</li>" % (cls(CLS_ITEM), "<br>\n      ".join(lines))
+
+
+          def type_groups(year):
+              """[(label, entries)] for one year, in TYPE_ORDER, adjacent duplicates merged."""
+              groups = sorted(by_year[year].items(), key=lambda kv: TYPE_RANK.get(kv[0], 99))
+              merged = []
+              for etype, entries in groups:
+                  label = TYPE_LABEL.get(etype, "Other")
+                  if merged and merged[-1][0] == label:
+                      merged[-1][1].extend(entries)
+                  else:
+                      merged.append((label, list(entries)))
+              return merged
+
+
+          def entry_list(entries):
+              return "<%s%s>\n%s\n</%s>" % (LIST_TAG, cls(CLS_LIST),
+                                            "\n".join(render_entry(e) for e in entries),
+                                            LIST_TAG)
+
+
+          def collapse_section(key, label, count, body, start_open):
+              """A click-to-expand section using the theme's curlcontent collapse pattern."""
+              sid = "pub-sec-" + key
+              return (
+                  '  <h3%s>\n'
+                  '    <button type="button" class="%s%s" data-bs-toggle="collapse" '
+                  'data-bs-target="#%s" aria-expanded="%s" aria-controls="%s">%s '
+                  '<small class="ms-1">(%d)</small>'
+                  '<span class="ti ti-plus-circle"></span>'
+                  '<span class="ti ti-dash-circle"></span></button>\n'
+                  '  </h3>\n'
+                  '  <div class="collapse%s" id="%s">\n%s\n  </div>\n'
+                  % (cls(CLS_TYPE_H_TOGGLE), CLS_TOGGLE,
+                     "" if start_open else " collapsed",
+                     sid, "true" if start_open else "false", sid, esc(label), count,
+                     " show" if start_open else "", sid, body)
+              )
+
+
+          def render_year_body(year, collapsible, start_open=False):
+              """Type sections for one year: open headings, or click-to-expand panels."""
+              merged = type_groups(year)
+
+              if not collapsible:
+                  out = []
+                  for label, entries in merged:
+                      out.append("<h3%s>%s <small>(%d)</small></h3>"
+                                 % (cls(CLS_TYPE_H), esc(label), len(entries)))
+                      out.append(entry_list(entries))
+                  return "\n".join(out)
+
+              out = ["<div%s>" % cls(CLS_COLLAPSE_WRAP)]
+              for label, entries in merged:
+                  out.append(collapse_section("%s-%s" % (slug(year), slug(label)),
+                                              label, len(entries),
+                                              entry_list(entries), start_open))
+              out.append("</div>")
+              return "\n".join(out)
+
+
           with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
 
               if PROBE:
                   f.write(build_probe() + "\n\n")
 
-              if SHOW_META:
-                  line = "%d publications, updated %s" % (total, date.today().strftime("%d %B %Y"))
-                  f.write("<p>%s</p>\n" % (("<small>%s</small>" % esc(line)) if USE_SMALL else esc(line)))
+              years = sorted(by_year.keys(), key=year_key, reverse=True)
 
-              for n, year in enumerate(sorted(by_year.keys(), key=year_key, reverse=True)):
+              if SHOW_META:
+                  f.write("<div%s>\n" % cls(CLS_META_BOX))
+                  f.write('  <p class="mb-2"><strong>%d publications</strong>'
+                          "<br><small>Updated %s</small></p>\n"
+                          % (total, esc(date.today().strftime("%d %B %Y"))))
+                  if YEAR_NAV:
+                      items = "".join(
+                          '<li%s><small><a href="#%s">%s</a></small></li>'
+                          % (cls(CLS_NAV_ITEM), "pub-" + slug(y), esc(y)) for y in years)
+                      f.write("  <ul%s>%s</ul>\n" % (cls(CLS_NAV_LIST), items))
+                  f.write("</div>\n")
+
+              for n, year in enumerate(years):
                   if n and YEAR_DIVIDER:
                       f.write("\n%s\n" % YEAR_DIVIDER)
-                  f.write("\n<h2>%s</h2>\n" % esc(year))
+                  f.write('\n<h2 id="pub-%s"%s>%s</h2>\n'
+                          % (slug(year), cls(CLS_YEAR_H), esc(year)))
+                  f.write(render_year_body(year,
+                                           collapsible=TYPE_COLLAPSE,
+                                           start_open=(n < OPEN_RECENT_YEARS)) + "\n")
 
-                  groups = sorted(by_year[year].items(), key=lambda kv: TYPE_RANK.get(kv[0], 99))
-                  merged = []
-                  for etype, entries in groups:
-                      label = TYPE_LABEL.get(etype, "Other")
-                      if merged and merged[-1][0] == label:
-                          merged[-1][1].extend(entries)
-                      else:
-                          merged.append((label, list(entries)))
-
-                  for label, entries in merged:
-                      f.write("<h3>%s</h3>\n" % esc(label))
-                      f.write("<%s>\n" % LIST_TAG)
-
-                      for entry in entries:
-                          etype = entry.get("ENTRYTYPE", "misc").lower()
-                          title = esc(clean_text(entry.get("title", "Untitled")))
-                          authors = fmt_authors(entry.get("author", "") or entry.get("editor", ""))
-                          venue = build_venue(entry, etype)
-
-                          note = clean_text(entry.get("note", ""))
-                          if note and len(note) < 120:
-                              if any(w in note.lower() for w in ("award", "medal", "prize")):
-                                  venue_suffix = " <strong>[%s]</strong>" % esc(note)
-                              else:
-                                  venue_suffix = " [%s]" % esc(note)
-                          else:
-                              venue_suffix = ""
-
-                          doi = clean_text(entry.get("doi", ""))
-                          if SHOW_DOI and doi:
-                              doi = re.sub(r"^https?://(dx\.)?doi\.org/", "", doi)
-                              doi_line = "DOI: " + esc(doi)
-                              if USE_SMALL:
-                                  doi_line = "<small>%s</small>" % doi_line
-                          else:
-                              doi_line = ""
-
-                          link = safe_link(pick_link(entry)) if LINK_TITLES else ""
-                          if link:
-                              target = ' target="_blank"' if LINK_BLANK else ""
-                              head = '<a href="%s"%s><strong>%s</strong></a>' % (link, target, title)
-                          else:
-                              head = "<strong>%s</strong>" % title
-
-                          if not link:
-                              unlinked.append((entry.get("ID", "?"),
-                                               clean_text(entry.get("year", "")),
-                                               clean_text(entry.get("title", ""))[:70]))
-
-                          lines = [head]
-                          if authors:
-                              lines.append(authors)
-                          if venue or venue_suffix:
-                              lines.append(venue + venue_suffix)
-                          if doi_line:
-                              lines.append(doi_line)
-
-                          f.write("  <li>%s</li>\n" % "<br>\n      ".join(lines))
-
-                      f.write("</%s>\n" % LIST_TAG)
-
-          # Confirmed to survive the CMS filter, from the probe run:
-          #   b i abbr time span small em strong br a p h1-h6 div section article
-          #   ul ol li dl dt dd table tr td figure, plus HTML comments.
-          # Confirmed removed, together with their contents:
-          #   hr u s strike del ins sub sup code kbd samp var mark q cite big tt font
-          #   nobr wbr aside blockquote pre figcaption details summary style.
-          # Attributes kept: class id title role data-* aria-* href target.
-          # Attributes stripped: style lang dir rel datetime start reversed.
-          ALLOWED_TAGS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "ol", "ul", "li",
+          ALLOWED_TAGS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "ol", "ul", "li", "button",
                           "dl", "dt", "dd", "table", "tr", "td", "div", "section",
                           "article", "figure", "br", "strong", "em", "small", "b", "i",
                           "a", "span", "abbr", "time"}
