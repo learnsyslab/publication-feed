@@ -1,3 +1,106 @@
+<p>PROBE-START</p>
+<p>[T01 b] <b>x</b> [/T01]</p>
+<p>[T02 i] <i>x</i> [/T02]</p>
+<p>[T03 u] <u>x</u> [/T03]</p>
+<p>[T04 s] <s>x</s> [/T04]</p>
+<p>[T05 strike] <strike>x</strike> [/T05]</p>
+<p>[T06 del-ins] <del>x</del><ins>y</ins> [/T06]</p>
+<p>[T07 sub-sup] <sub>x</sub><sup>y</sup> [/T07]</p>
+<p>[T08 code] <code>x</code> [/T08]</p>
+<p>[T09 kbd-samp-var] <kbd>x</kbd><samp>y</samp><var>z</var> [/T09]</p>
+<p>[T10 abbr] <abbr title="probe-title">x</abbr> [/T10]</p>
+<p>[T11 mark] <mark>x</mark> [/T11]</p>
+<p>[T12 q-cite] <q>x</q><cite>y</cite> [/T12]</p>
+<p>[T13 time] <time datetime="2026-01-01">x</time> [/T13]</p>
+<p>[T14 span] <span>x</span> [/T14]</p>
+<p>[T15 span-class] <span class="probe-class">x</span> [/T15]</p>
+<p>[T16 span-style] <span style="color:#b00">x</span> [/T16]</p>
+<p>[T17 big-tt-font] <big>x</big><tt>y</tt><font color="red">z</font> [/T17]</p>
+<p>[T18 nobr-wbr] <nobr>x</nobr><wbr> [/T18]</p>
+<p>[T19 small-nested] <small><em>x</em></small> [/T19]</p>
+<p>[T20 entities] nbsp[&nbsp;] amp[&amp;] mdash[&#8212;] box[&#9472;] direct[– ö] [/T20]</p>
+<p>[T21 link-doi] <a href="https://doi.org/10.1109/TAC.2025.3608258" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T21]</p>
+<p>[T22 link-arxiv] <a href="https://arxiv.org/abs/2409.11171" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T22]</p>
+<p>[T23 link-sciencedirect] <a href="https://www.sciencedirect.com/" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T23]</p>
+<p>[T24 link-github] <a href="https://github.com/learnsyslab" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T24]</p>
+<p>[T25 link-youtube] <a href="https://www.youtube.com/@learnsyslab" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T25]</p>
+<p>[T26 link-ieee] <a href="https://ieeexplore.ieee.org/" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T26]</p>
+<p>[T27 link-tum] <a href="https://www.ce.cit.tum.de/lsy/home/" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T27]</p>
+<p>[T28 link-githubio] <a href="https://tum-lsy.github.io/uq_vla/" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T28]</p>
+<p>[T29 link-mailto] <a href="mailto:office.lsy@tum.de" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T29]</p>
+<p>[T30 link-relative] <a href="/lsy/home/" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T30]</p>
+<p>[T31 link-anchor] <a href="#topbar" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T31]</p>
+<p>[T32 hr-plain]</p>
+<hr>
+<p>[/T32]</p>
+<p>[T33 hr-selfclosing]</p>
+<hr />
+<p>[/T33]</p>
+<p>[T34 hr-uppercase]</p>
+<HR>
+<p>[/T34]</p>
+<p>[T35 hr-ce-div]</p>
+<hr class="ce-div">
+<p>[/T35]</p>
+<p>[T36 div-wrapping-hr]</p>
+<div class="ce-div"><hr></div>
+<p>[/T36]</p>
+<p>[T37 div-plain]</p>
+<div>x</div>
+<p>[/T37]</p>
+<p>[T38 div-class-style]</p>
+<div class="probe-class" id="probe-id" style="border-top:2px solid #b00">x</div>
+<p>[/T38]</p>
+<p>[T39 section-article-aside]</p>
+<section>x</section><article>y</article><aside>z</aside>
+<p>[/T39]</p>
+<p>[T40 h1-h4-h5-h6]</p>
+<h1>x</h1><h4>x</h4><h5>x</h5><h6>x</h6>
+<p>[/T40]</p>
+<p>[T41 blockquote]</p>
+<blockquote>x</blockquote>
+<p>[/T41]</p>
+<p>[T42 pre]</p>
+<pre>x</pre>
+<p>[/T42]</p>
+<p>[T43 ul-li]</p>
+<ul><li>x</li></ul>
+<p>[/T43]</p>
+<p>[T44 dl-dt-dd]</p>
+<dl><dt>x</dt><dd>y</dd></dl>
+<p>[/T44]</p>
+<p>[T45 table]</p>
+<table><tr><td>x</td><td>y</td></tr></table>
+<p>[/T45]</p>
+<p>[T46 figure]</p>
+<figure>x<figcaption>y</figcaption></figure>
+<p>[/T46]</p>
+<p>[T47 details]</p>
+<details><summary>x</summary>y</details>
+<p>[/T47]</p>
+<p>[T48 p-attrs]</p>
+<p class="probe-class" id="probe-id" style="color:#b00" title="probe-title" lang="en" dir="ltr" role="note" data-probe="1" aria-label="probe">x</p>
+<p>[/T48]</p>
+<p>[T49 ol-attrs]</p>
+<ol start="7" reversed><li>x</li></ol>
+<p>[/T49]</p>
+<p>[T50 empty-p]</p>
+<p></p>
+<p>[/T50]</p>
+<p>[T51 nbsp-p]</p>
+<p>&nbsp;</p>
+<p>[/T51]</p>
+<p>[T52 empty-div-span]</p>
+<div></div><span></span>
+<p>[/T52]</p>
+<p>[T53 style-block]</p>
+<style>.probe-class{color:#b00}</style>
+<p>[/T53]</p>
+<p>[T54 comment]</p>
+<!-- probe-comment -->
+<p>[/T54]</p>
+<p>PROBE-END</p>
+
 <p><small>213 publications, updated 15 September 2026</small></p>
 
 <h2>2026</h2>
@@ -67,7 +170,9 @@
       Hannah Schieber, Dominik Frischmann, Victor Schaack, Angela P. Schoellig, and Daniel Roth<br>
       <em>Abstract and Poster, in the Workshop on Semantics for Reliable Robot Autonomy (SRRA) at the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2025</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -144,7 +249,9 @@
       Martin Schuck, Alexander von Rohr, and Angela P. Schoellig<br>
       <em>Abstract and Poster, in the Workshop on Differentiable Systems and Scientific Machine Learning at EurIPS</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2024</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -209,7 +316,9 @@
       Ralf R&#246;mer, Lukas Brunke, Martin Schuck, and Angela P. Schoellig<br>
       <em>Abstract and Poster, in the Back to the Future: Robot Learning Going Real Workshop at the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2023</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -259,7 +368,9 @@
       Adam Heins and Angela P. Schoellig<br>
       <em>Short Paper in the Embracing Contacts Workshop at the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2022</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -306,7 +417,9 @@
       Navid Kayhani, Brenda McCabe, and Angela P. Schoellig<br>
       <em>Proc. of the Canadian Society of Civil Engineering Annual Conference (CSCE)</em> [Accepted]</li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2021</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -356,7 +469,9 @@
       Jacopo Panerati, Hehui Zheng, SiQi Zhou, James Xu, Amanda Prorok, and Angela P. Schoellig<br>
       <em>Proc. of the IEEE International Conference on Intelligent Robots and Systems (IROS)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2020</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -406,7 +521,9 @@
       Michael J. Sorocky, Siqi Zhou, and Angela P. Schoellig<br>
       <em>Proc. of the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2019</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -486,7 +603,9 @@
       Siqi Zhou, Andriy Sarabakha, Erdal Kayacan, Mohamed K. Helwa, and Angela P. Schoellig<br>
       <em>Abstract and Presentation, in Proc. of the Resilient Robot Teams Workshop at the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2018</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -536,7 +655,9 @@
       Qiyang Li, Xintong Du, Yizhou Huang, Quinlan Sykora, and Angela P. Schoellig<br>
       <em>arXiv</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2017</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -589,7 +710,9 @@
       Thomas Bamford, Kamran Esmaeili, and Angela P. Schoellig<br>
       <em>arXiv</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2016</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -648,7 +771,9 @@
       Chris McKinnon and Angela P. Schoellig<br>
       <em>Video Submission, Assn. of the Advancement of Artificial Intelligence (AAAI) AI Video Competition</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2015</h2>
 <h3>Conference Papers</h3>
 <ol>
@@ -674,7 +799,7 @@
       <em>Abstract and Presentation in Proc. of the Second Machine Learning in Planning and Control of Robot Motion Workshop at the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</em></li>
 </ol>
 
-<hr>
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
 
 <h2>2014</h2>
 <h3>Journal Articles</h3>
@@ -710,7 +835,9 @@
       Angela P. Schoellig, Hallie Siegel, Federico Augugliaro, and Raffaello D'Andrea<br>
       <em>Controls and Art</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2013</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -730,7 +857,9 @@
       Angela P. Schoellig<br>
       <em>PhD thesis, Diss. ETH No. 20593, Institute for Dynamic Systems and Control, ETH Zurich</em> <strong>[Awards: ETH Medal, Dimitris N. Chorafas Foundation Prize]</strong></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2012</h2>
 <h3>Journal Articles</h3>
 <ol>
@@ -762,7 +891,9 @@
       Angela P. Schoellig, Fabian L. Mueller, and Raffaello D'Andrea<br>
       <em>Video Submission, AI and Robotics Multimedia Fair, Conference on Artificial Intelligence (AI), Assn. of the Advancement of Artificial Intelligence (AAAI)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2011</h2>
 <h3>Conference Papers</h3>
 <ol>
@@ -779,7 +910,9 @@
       Sergei Lupashin, Angela P. Schoellig, Markus Hehn, and Raffaello D'Andrea<br>
       <em>Video Submission, in Proc. of the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2010</h2>
 <h3>Conference Papers</h3>
 <ol>
@@ -796,7 +929,9 @@
       Angela P. Schoellig, Federico Augugliaro, and Raffaello D'Andrea<br>
       <em>Proc. of the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2009</h2>
 <h3>Conference Papers</h3>
 <ol>
@@ -804,7 +939,9 @@
       Angela P. Schoellig and Raffaello D'Andrea<br>
       <em>Proc. of the European Control Conference (ECC)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2008</h2>
 <h3>Conference Papers</h3>
 <ol>
@@ -818,7 +955,9 @@
       Angela P. Schoellig and Raffaello D'Andrea<br>
       <em>Abstract and Poster, in Proc. of the Robotics Challenges for Machine Learning Workshop at the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2007</h2>
 <h3>Conference Papers</h3>
 <ol>
@@ -841,7 +980,9 @@
       Angela P. Schoellig<br>
       <em>Master's thesis, Georgia Institute of Technology</em></li>
 </ol>
-<hr>
+
+<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+
 <h2>2006</h2>
 <h3>Theses</h3>
 <ol>
