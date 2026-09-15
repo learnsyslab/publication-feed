@@ -15,6 +15,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bibtool
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -25,26 +30,29 @@ jobs:
 
       - name: Fetch, Clean, and Sort BibTeX
         run: |
+          # Pre-clean raw file using bibtool to prevent syntax crashes
+          curl -sL -A "Mozilla/5.0" "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib" -o raw_library.bib
+          bibtool -r keep.stuff -i raw_library.bib -o clean_library.bib || true
+
           cat << 'EOF' > parse_bib.py
-          import urllib.request
           import bibtexparser
+          from bibtexparser.bparser import BibTexParser
+          from bibtexparser.customization import convert_to_unicode
           from collections import defaultdict
           import re
 
-          url = "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib"
-          req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+          with open("clean_library.bib", "r", encoding="utf-8", errors="ignore") as f:
+              bib_text = f.read()
 
-          with urllib.request.urlopen(req) as response:
-              bib_text = response.read().decode('utf-8', errors='ignore')
-
-          # Loose parser configuration to handle malformed entries gracefully
-          parser = bibtexparser.bparser.BibTexParser(common_strings=True, ignore_errors=True)
+          parser = BibTexParser(common_strings=True)
+          parser.customization = convert_to_unicode
+          
+          # Load database using fixed parser setup
           bib_db = bibtexparser.loads(bib_text, parser=parser)
 
           def clean_text(text):
               if not text:
                   return ""
-              # Remove LaTeX braces and clean whitespace
               text = re.sub(r'[\{\}]', '', text)
               text = re.sub(r'\s+', ' ', text).strip()
               return text
@@ -57,7 +65,6 @@ jobs:
           with open("index.html", "w", encoding="utf-8") as f:
               f.write('<div class="publications-feed" style="font-family: sans-serif; line-height: 1.6;">\n')
               
-              # Sort years descending (newest first)
               for year in sorted(by_year.keys(), reverse=True):
                   f.write(f'  <h2 style="margin-top: 1.5em; border-bottom: 2px solid #ccc; padding-bottom: 0.2em;">{year}</h2>\n')
                   f.write('  <ul style="list-style-type: none; padding-left: 0;">\n')
@@ -68,7 +75,6 @@ jobs:
                       venue = clean_text(entry.get("journal", entry.get("booktitle", "")))
                       url = entry.get("url", entry.get("doi", "")).strip()
 
-                      # Uniform layout formatting
                       title_html = f'<a href="{url}" target="_blank" style="text-decoration: none; color: #0056b3; font-weight: bold;">{title}</a>' if url else f'<strong>{title}</strong>'
                       venue_html = f' — <em>{venue}</em>' if venue else ""
                       
