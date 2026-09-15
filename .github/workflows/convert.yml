@@ -30,62 +30,264 @@ jobs:
 
       - name: Fetch, Clean, and Sort BibTeX
         run: |
-          # Pre-clean raw file using bibtool to prevent syntax crashes
+          # Download the raw library and bail out if the fetch clearly failed,
+          # so a bad day upstream never wipes the published page.
           curl -sL -A "Mozilla/5.0" "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib" -o raw_library.bib
+          if [ ! -s raw_library.bib ] || [ "$(wc -c < raw_library.bib)" -lt 10000 ]; then
+            echo "Downloaded .bib looks empty or truncated - keeping the existing index.html."
+            exit 1
+          fi
+
+          # Pre-clean raw file using bibtool to prevent syntax crashes
           bibtool -r keep.stuff -i raw_library.bib -o clean_library.bib || true
+          if [ ! -s clean_library.bib ]; then
+            cp raw_library.bib clean_library.bib
+          fi
 
           cat << 'EOF' > parse_bib.py
           import bibtexparser
           from bibtexparser.bparser import BibTexParser
           from bibtexparser.customization import convert_to_unicode
           from collections import defaultdict
+          from datetime import date
+          from html import escape
           import re
 
-          with open("clean_library.bib", "r", encoding="utf-8", errors="ignore") as f:
-              bib_text = f.read()
+          # ----------------------------------------------------------------------
+          # Settings
+          # ----------------------------------------------------------------------
+          HIGHLIGHT = ["Schoellig", "Schollig", "Sch\u00f6llig"]  # bolded in author lists
+          SHOW_DOI = True        # DOI shown as plain text (not a link)
+          INPUT_FILE = "clean_library.bib"
+          OUTPUT_FILE = "index.html"
 
-          parser = BibTexParser(common_strings=True)
-          parser.customization = convert_to_unicode
-          
-          # Load database using fixed parser setup
-          bib_db = bibtexparser.loads(bib_text, parser=parser)
+          # Section headings, in the order they should appear inside each year
+          TYPE_ORDER = [
+              ("article", "Journal Articles"),
+              ("inproceedings", "Conference Papers"),
+              ("incollection", "Book Chapters"),
+              ("book", "Books"),
+              ("techreport", "Preprints and Submitted Work"),
+              ("phdthesis", "Theses"),
+              ("mastersthesis", "Theses"),
+              ("misc", "Talks, Posters and Videos"),
+          ]
+          TYPE_LABEL = dict(TYPE_ORDER)
+          TYPE_RANK = {t: i for i, (t, _) in enumerate(TYPE_ORDER)}
+
+          # ----------------------------------------------------------------------
+          # Helpers
+          # ----------------------------------------------------------------------
+          def esc(text):
+              return escape(text, quote=False)
+
 
           def clean_text(text):
               if not text:
                   return ""
-              text = re.sub(r'[\{\}]', '', text)
-              text = re.sub(r'\s+', ' ', text).strip()
-              return text
+              text = re.sub(r"[{}]", "", text)
+              text = text.replace("\\&", "&").replace("\\%", "%").replace("\\_", "_")
+              text = re.sub(r"~", " ", text)
+              text = re.sub(r"\s+", " ", text).strip()
+              return text.strip(" .,")
 
-          by_year = defaultdict(list)
+
+          def fmt_authors(raw):
+              raw = clean_text(raw)
+              if not raw:
+                  return ""
+              names = []
+              for name in re.split(r"\s+and\s+", raw):
+                  name = name.strip().rstrip("*")
+                  if not name:
+                      continue
+                  if "," in name:  # "Schoellig, Angela P." -> "Angela P. Schoellig"
+                      last, first = name.split(",", 1)
+                      name = f"{first.strip()} {last.strip()}".strip()
+                  if any(h.lower() in name.lower() for h in HIGHLIGHT):
+                      names.append(f"<strong>{esc(name)}</strong>")
+                  else:
+                      names.append(esc(name))
+              if len(names) == 1:
+                  return names[0]
+              if len(names) == 2:
+                  return " and ".join(names)
+              return ", ".join(names[:-1]) + ", and " + names[-1]
+
+
+          def fmt_pages(raw):
+              pages = clean_text(raw)
+              if not pages:
+                  return ""
+              pages = re.sub(r"\s*-{1,3}\s*", "\u2013", pages)
+              label = "pp." if "\u2013" in pages else "p."
+              return f"{label} {pages}"
+
+
+          def build_venue(entry, etype):
+              """Return the venue string for an entry, without any links."""
+              bits = []
+              if etype == "article":
+                  main = clean_text(entry.get("journal", ""))
+                  vol = clean_text(entry.get("volume", ""))
+                  num = clean_text(entry.get("number", ""))
+                  if vol:
+                      bits.append(f"vol. {vol}")
+                  if num:
+                      bits.append(f"no. {num}")
+              elif etype in ("inproceedings", "incollection"):
+                  main = clean_text(entry.get("booktitle", ""))
+                  pub = clean_text(entry.get("publisher", ""))
+                  if pub:
+                      bits.append(pub)
+              elif etype == "techreport":
+                  main = clean_text(entry.get("journal", "")) or clean_text(entry.get("booktitle", ""))
+                  inst = clean_text(entry.get("institution", ""))
+                  if not main:
+                      main = inst
+                  elif inst:
+                      bits.append(inst)
+              elif etype in ("phdthesis", "mastersthesis"):
+                  kind = "PhD thesis" if etype == "phdthesis" else "Master's thesis"
+                  main = clean_text(entry.get("school", "")) or clean_text(entry.get("institution", ""))
+                  main = f"{kind}, {main}" if main else kind
+              elif etype == "book":
+                  main = clean_text(entry.get("publisher", "")) or clean_text(entry.get("series", ""))
+              else:
+                  main = clean_text(entry.get("howpublished", "")) or clean_text(entry.get("booktitle", ""))
+
+              pages = fmt_pages(entry.get("pages", ""))
+              if pages:
+                  bits.append(pages)
+
+              venue = esc(main) if main else ""
+              if venue:
+                  venue = f"<em>{venue}</em>"
+              tail = ", ".join(esc(b) for b in bits)
+              if venue and tail:
+                  return f"{venue}, {tail}"
+              return venue or tail
+
+
+          def year_key(y):
+              m = re.search(r"\d{4}", y or "")
+              return int(m.group()) if m else -1
+
+
+          # ----------------------------------------------------------------------
+          # Parse
+          # ----------------------------------------------------------------------
+          with open(INPUT_FILE, "r", encoding="utf-8", errors="ignore") as f:
+              bib_text = f.read()
+
+          parser = BibTexParser(common_strings=True)
+          parser.customization = convert_to_unicode
+          parser.ignore_nonstandard_types = False
+          bib_db = bibtexparser.loads(bib_text, parser=parser)
+
+          by_year = defaultdict(lambda: defaultdict(list))
+          total = 0
           for entry in bib_db.entries:
-              year = clean_text(entry.get("year", "Other"))
-              by_year[year].append(entry)
+              etype = entry.get("ENTRYTYPE", "misc").lower()
+              if etype not in TYPE_RANK:
+                  etype = "misc"
+              year = clean_text(entry.get("year", "")) or "Undated"
+              by_year[year][etype].append(entry)
+              total += 1
 
-          with open("index.html", "w", encoding="utf-8") as f:
-              f.write('<div class="publications-feed" style="font-family: sans-serif; line-height: 1.6;">\n')
-              
-              for year in sorted(by_year.keys(), reverse=True):
-                  f.write(f'  <h2 style="margin-top: 1.5em; border-bottom: 2px solid #ccc; padding-bottom: 0.2em;">{year}</h2>\n')
-                  f.write('  <ul style="list-style-type: none; padding-left: 0;">\n')
-                  
-                  for entry in by_year[year]:
-                      title = clean_text(entry.get("title", "Untitled"))
-                      author = clean_text(entry.get("author", "Unknown"))
-                      venue = clean_text(entry.get("journal", entry.get("booktitle", "")))
-                      url = entry.get("url", entry.get("doi", "")).strip()
+          # ----------------------------------------------------------------------
+          # Render
+          # ----------------------------------------------------------------------
+          CSS = """
+          .pubs{--pub-ink:#1c1c1e;--pub-muted:#5f6368;--pub-rule:#e3e5e8;--pub-accent:#0b4f8a;
+            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+            color:var(--pub-ink);line-height:1.55;max-width:60em;margin:0 auto}
+          .pubs *{box-sizing:border-box}
+          .pubs-meta{font-size:.85em;color:var(--pub-muted);margin:0 0 2em;letter-spacing:.02em;
+            text-transform:uppercase}
+          .pubs-year{margin:0 0 2.6em}
+          .pubs-year-title{font-size:1.5em;font-weight:700;margin:0 0 .1em;padding:0;
+            color:var(--pub-accent);letter-spacing:.01em;border:0}
+          .pubs-year-rule{height:3px;background:var(--pub-accent);opacity:.18;border-radius:2px;
+            margin:0 0 1.2em}
+          .pubs-group{margin:0 0 1.6em}
+          .pubs-group-title{font-size:.78em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+            color:var(--pub-muted);margin:0 0 .7em;padding:0;border:0}
+          .pubs-list{list-style:none;margin:0;padding:0;counter-reset:pub}
+          .pub{counter-increment:pub;position:relative;padding:.55em 0 .75em 2.6em;
+            border-bottom:1px solid var(--pub-rule)}
+          .pub:last-child{border-bottom:0}
+          .pub::before{content:counter(pub);position:absolute;left:0;top:.62em;width:1.9em;
+            text-align:right;font-size:.82em;font-variant-numeric:tabular-nums;color:#b6bcc4}
+          .pub-title{font-weight:600;font-size:1.02em;margin:0 0 .18em}
+          .pub-authors{font-size:.94em;color:#3b3f45;margin:0 0 .12em}
+          .pub-venue{font-size:.92em;color:var(--pub-muted)}
+          .pub-extra{margin-top:.35em;font-size:.78em;color:var(--pub-muted)}
+          .pub-tag{display:inline-block;padding:.12em .55em;margin-right:.5em;border-radius:3px;
+            background:#eef2f6;color:#41586f;font-weight:600;letter-spacing:.02em}
+          .pub-tag-award{background:#fdf1dc;color:#8a5a12}
+          .pub-doi{font-variant-numeric:tabular-nums;word-break:break-all}
+          @media (max-width:600px){.pub{padding-left:2.1em}.pubs-year-title{font-size:1.3em}}
+          """
 
-                      title_html = f'<a href="{url}" target="_blank" style="text-decoration: none; color: #0056b3; font-weight: bold;">{title}</a>' if url else f'<strong>{title}</strong>'
-                      venue_html = f' — <em>{venue}</em>' if venue else ""
-                      
-                      f.write(f'    <li style="margin-bottom: 1em; padding-bottom: 0.5em; border-bottom: 1px dashed #eee;">\n')
-                      f.write(f'      <div>{title_html}</div>\n')
-                      f.write(f'      <div style="color: #444; font-size: 0.95em;">{author}{venue_html}</div>\n')
-                      f.write(f'    </li>\n')
-                      
-                  f.write('  </ul>\n')
-                  
-              f.write('</div>\n')
+          with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+              f.write('<div class="pubs">\n')
+              f.write("<style>%s</style>\n" % CSS)
+              f.write(
+                  '  <p class="pubs-meta">%d publications &middot; updated %s</p>\n'
+                  % (total, date.today().strftime("%d %B %Y"))
+              )
+
+              for year in sorted(by_year.keys(), key=year_key, reverse=True):
+                  f.write('  <section class="pubs-year">\n')
+                  f.write('    <h2 class="pubs-year-title">%s</h2>\n' % esc(year))
+                  f.write('    <div class="pubs-year-rule"></div>\n')
+
+                  groups = sorted(by_year[year].items(), key=lambda kv: TYPE_RANK.get(kv[0], 99))
+                  merged = []
+                  for etype, entries in groups:
+                      label = TYPE_LABEL.get(etype, "Other")
+                      if merged and merged[-1][0] == label:
+                          merged[-1][1].extend(entries)
+                      else:
+                          merged.append((label, list(entries)))
+
+                  for label, entries in merged:
+                      f.write('    <div class="pubs-group">\n')
+                      f.write('      <h3 class="pubs-group-title">%s</h3>\n' % esc(label))
+                      f.write('      <ol class="pubs-list">\n')
+                      for entry in entries:
+                          etype = entry.get("ENTRYTYPE", "misc").lower()
+                          title = esc(clean_text(entry.get("title", "Untitled")))
+                          authors = fmt_authors(entry.get("author", "") or entry.get("editor", ""))
+                          venue = build_venue(entry, etype)
+
+                          extra = []
+                          note = clean_text(entry.get("note", ""))
+                          if note and len(note) < 120:
+                              award = any(w in note.lower() for w in ("award", "medal", "prize", "best paper"))
+                              cls = "pub-tag pub-tag-award" if award else "pub-tag"
+                              extra.append('<span class="%s">%s</span>' % (cls, esc(note)))
+                          doi = clean_text(entry.get("doi", ""))
+                          if SHOW_DOI and doi:
+                              doi = re.sub(r"^https?://(dx\.)?doi\.org/", "", doi)
+                              extra.append('<span class="pub-doi">DOI: %s</span>' % esc(doi))
+
+                          f.write('        <li class="pub">\n')
+                          f.write('          <div class="pub-title">%s</div>\n' % title)
+                          if authors:
+                              f.write('          <div class="pub-authors">%s</div>\n' % authors)
+                          if venue:
+                              f.write('          <div class="pub-venue">%s</div>\n' % venue)
+                          if extra:
+                              f.write('          <div class="pub-extra">%s</div>\n' % " ".join(extra))
+                          f.write("        </li>\n")
+                      f.write("      </ol>\n")
+                      f.write("    </div>\n")
+                  f.write("  </section>\n")
+              f.write("</div>\n")
+
+          print("Wrote %s with %d entries across %d years." % (OUTPUT_FILE, total, len(by_year)))
           EOF
           python parse_bib.py
 
@@ -94,5 +296,5 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Update clean publication feed" || exit 0
+          git commit -m "Update publication feed" || exit 0
           git push
