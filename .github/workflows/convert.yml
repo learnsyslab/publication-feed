@@ -83,15 +83,18 @@ jobs:
           # !important while leaving the background transparent, so the label vanishes
           # and stays vanished after a click. .btn sets --bs-btn-bg: transparent and
           # never defines --bs-btn-hover-color, so hover leaves the text colour alone.
-          CLS_TOGGLE = "btn w-100 text-start"
+          CLS_TOGGLE = "btn w-100 text-start link-primary"
           CLS_TOGGLE_OPEN = ""                       # Bootstrap adds .collapsed itself after
-          CLS_META_BOX = "c-card c-card--box mb-4"
+          CLS_META = "mb-4"                         # one quiet line, no box
+          CLS_COLLAPSE_BODY = ""                    # opened panel keeps the page background
+          CLS_INNER = "c-card--box"                 # list sits on the theme blue, #f0f5fa
           CLS_NAV_LIST = "list-inline mb-0"
           CLS_NAV_ITEM = "list-inline-item"
           CLS_YEAR_H = "mt-4"
           CLS_TYPE_H = "h5 mt-4 mb-2"      # open heading, needs its own spacing
           CLS_TYPE_H_TOGGLE = "h5"         # toggle bars stack flush, so no margin utilities
           CLS_LIST = "list-unstyled mb-0"          # with LIST_TAG = "ol", use "mb-0" to keep numbers
+          CLS_TYPE_H_GAP = "h5 mt-3"               # every toggle bar after the first in a year
           CLS_ITEM = "border-start ps-3 mb-3"      # light rule down the left of each entry
           CLS_TAG = "d-inline-block px-2 text-bg-light me-1"
           CLS_TAG_AWARD = "d-inline-block px-2 text-bg-warning me-1"
@@ -407,26 +410,28 @@ jobs:
 
 
           def entry_list(entries):
-              return "<%s%s>\n%s\n</%s>" % (LIST_TAG, cls(CLS_LIST),
-                                            "\n".join(render_entry(e) for e in entries),
-                                            LIST_TAG)
+              listing = "<%s%s>\n%s\n</%s>" % (LIST_TAG, cls(CLS_LIST),
+                                               "\n".join(render_entry(e) for e in entries),
+                                               LIST_TAG)
+              return "<div%s>\n%s\n</div>" % (cls(CLS_INNER), listing) if CLS_INNER else listing
 
 
-          def collapse_section(key, label, count, body, start_open):
+          def collapse_section(key, label, count, body, start_open, first=False):
               """A click-to-expand section using the theme's curlcontent collapse pattern."""
               sid = "pub-sec-" + key
               return (
                   '  <h3%s>\n'
                   '    <button type="button" class="%s%s" data-bs-toggle="collapse" '
-                  'data-bs-target="#%s" aria-expanded="%s" aria-controls="%s">%s '
+                  'data-bs-target="#%s" aria-expanded="%s" aria-controls="%s"><strong>%s</strong> '
                   '<small class="ms-1">(%d)</small>'
                   '<span class="ti ti-plus-circle"></span>'
                   '<span class="ti ti-dash-circle"></span></button>\n'
                   '  </h3>\n'
-                  '  <div class="collapse%s" id="%s">\n%s\n  </div>\n'
-                  % (cls(CLS_TYPE_H_TOGGLE), CLS_TOGGLE,
+                  '  <div class="collapse%s%s" id="%s">\n%s\n  </div>\n'
+                  % (cls(CLS_TYPE_H_TOGGLE if first else CLS_TYPE_H_GAP), CLS_TOGGLE,
                      "" if start_open else " collapsed",
                      sid, "true" if start_open else "false", sid, esc(label), count,
+                     (" " + CLS_COLLAPSE_BODY) if CLS_COLLAPSE_BODY else "",
                      " show" if start_open else "", sid, body)
               )
 
@@ -444,10 +449,11 @@ jobs:
                   return "\n".join(out)
 
               out = ["<div%s>" % cls(CLS_COLLAPSE_WRAP)]
-              for label, entries in merged:
+              for i, (label, entries) in enumerate(merged):
                   out.append(collapse_section("%s-%s" % (slug(year), slug(label)),
                                               label, len(entries),
-                                              entry_list(entries), start_open))
+                                              entry_list(entries), start_open,
+                                              first=(i == 0)))
               out.append("</div>")
               return "\n".join(out)
 
@@ -460,16 +466,13 @@ jobs:
               years = sorted(by_year.keys(), key=year_key, reverse=True)
 
               if SHOW_META:
-                  f.write("<div%s>\n" % cls(CLS_META_BOX))
-                  f.write('  <p class="mb-2"><strong>%d publications</strong>'
-                          "<br><small>Updated %s</small></p>\n"
-                          % (total, esc(date.today().strftime("%d %B %Y"))))
+                  f.write("<p%s><small><em>%d publications &middot; updated %s</em></small></p>\n"
+                          % (cls(CLS_META), total, esc(date.today().strftime("%d %B %Y"))))
                   if YEAR_NAV:
                       items = "".join(
                           '<li%s><small><a href="#%s">%s</a></small></li>'
                           % (cls(CLS_NAV_ITEM), "pub-" + slug(y), esc(y)) for y in years)
-                      f.write("  <ul%s>%s</ul>\n" % (cls(CLS_NAV_LIST), items))
-                  f.write("</div>\n")
+                      f.write("<ul%s>%s</ul>\n" % (cls(CLS_NAV_LIST), items))
 
               for n, year in enumerate(years):
                   if n and YEAR_DIVIDER:
