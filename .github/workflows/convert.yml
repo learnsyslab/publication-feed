@@ -25,8 +25,8 @@ jobs:
           # 1. Download the BibTeX file
           curl -sL -A "Mozilla/5.0" "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib" -o library.bib
 
-          # 2. Convert BibTeX to HTML body list (sorted by year)
-          bibtex2html -a -d -nodoc -dl library.bib
+          # 2. Convert BibTeX to HTML list (-i ignores parsing errors in bad entries)
+          bibtex2html -i -a -d -nodoc -dl library.bib
 
           # 3. Rename generated output file to index.html
           mv library.html index.html
