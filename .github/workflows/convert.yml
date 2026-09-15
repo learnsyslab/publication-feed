@@ -15,24 +15,27 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Pandoc
+      - name: Install Pandoc & BibTool
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc
+          sudo apt-get install -y pandoc bibtool
 
-      - name: Fetch and Convert BibTeX
+      - name: Fetch, Sanitize, and Convert BibTeX
         run: |
-          # 1. Download BibTeX file
-          curl -sL -A "Mozilla/5.0" "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib" -o library.bib
+          # 1. Download raw BibTeX file
+          curl -sL -A "Mozilla/5.0" "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib" -o raw_library.bib
 
-          # 2. Create a markdown file referencing all entries
+          # 2. Sanitize and repair BibTeX syntax errors
+          bibtool -r keep.stuff -i raw_library.bib -o clean_library.bib || true
+
+          # 3. Create a markdown file referencing all entries
           echo '---' > refs.md
-          echo 'bibliography: library.bib' >> refs.md
+          echo 'bibliography: clean_library.bib' >> refs.md
           echo 'nocite: "@*"' >> refs.md
           echo '---' >> refs.md
           echo '# Publications' >> refs.md
 
-          # 3. Convert to HTML using built-in citeproc
+          # 4. Convert to HTML using Pandoc's built-in citeproc
           pandoc refs.md --citeproc -t html -o index.html
 
       - name: Commit and Push HTML
