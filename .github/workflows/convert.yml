@@ -57,9 +57,19 @@ jobs:
           # Settings
           # ----------------------------------------------------------------------
           HIGHLIGHT = ["Schoellig", "Schollig", "Sch\u00f6llig"]  # bolded in author lists
-          SHOW_DOI = True        # DOI shown as plain text (not a link)
+          SHOW_DOI = True          # DOI shown as plain text (never as a link)
+          SHOW_META = True         # "213 publications - updated ..." line at the top
+          IMPORTANT = True         # append !important so a strict CMS theme cannot override
           INPUT_FILE = "clean_library.bib"
           OUTPUT_FILE = "index.html"
+
+          # Palette
+          INK = "#1c1c1e"
+          MUTED = "#5f6368"
+          ACCENT = "#0b4f8a"
+          RULE = "#e3e5e8"
+          FONT = ("-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,"
+                  "Helvetica,Arial,sans-serif")
 
           # Section headings, in the order they should appear inside each year
           TYPE_ORDER = [
@@ -75,8 +85,70 @@ jobs:
           TYPE_LABEL = dict(TYPE_ORDER)
           TYPE_RANK = {t: i for i, (t, _) in enumerate(TYPE_ORDER)}
 
+
           # ----------------------------------------------------------------------
-          # Helpers
+          # Inline-style helper
+          # ----------------------------------------------------------------------
+          def st(*declarations):
+              """Build a style="..." attribute from 'prop:value' strings."""
+              out = []
+              for d in declarations:
+                  d = d.strip().rstrip(";")
+                  if not d:
+                      continue
+                  out.append(d + " !important" if IMPORTANT else d)
+              return ' style="%s"' % ";".join(out)
+
+
+          S_WRAP = st(
+              "font-family:" + FONT,
+              "color:" + INK,
+              "line-height:1.55",
+              "font-size:16px",
+              "max-width:60em",
+              "margin:0",
+              "padding:0",
+          )
+          S_META = st(
+              "margin:0 0 2em", "padding:0", "font-size:0.8em", "color:" + MUTED,
+              "letter-spacing:0.06em", "text-transform:uppercase",
+          )
+          S_YEAR = st("margin:0 0 2.4em", "padding:0")
+          S_YEAR_H = st(
+              "margin:0 0 0.9em", "padding:0 0 0.25em", "font-family:" + FONT,
+              "font-size:1.5em", "font-weight:700", "color:" + ACCENT,
+              "border:0", "border-bottom:3px solid #d7e2ec", "text-transform:none",
+          )
+          S_GROUP = st("margin:0 0 1.5em", "padding:0")
+          S_GROUP_H = st(
+              "margin:0 0 0.6em", "padding:0", "font-family:" + FONT, "font-size:0.78em",
+              "font-weight:700", "letter-spacing:0.12em", "text-transform:uppercase",
+              "color:" + MUTED, "border:0",
+          )
+          S_LIST = st("list-style:decimal outside", "margin:0", "padding:0 0 0 2.1em")
+          S_ITEM = st(
+              "margin:0 0 0.8em", "padding:0 0 0.7em", "border-bottom:1px solid " + RULE,
+          )
+          S_ITEM_LAST = st("margin:0", "padding:0", "border:0")
+          S_TITLE = st("margin:0 0 0.15em", "font-weight:600", "font-size:1.02em")
+          S_AUTHORS = st("margin:0 0 0.1em", "font-size:0.94em", "color:#3b3f45")
+          S_VENUE = st("margin:0", "font-size:0.92em", "color:" + MUTED)
+          S_EXTRA = st("margin:0.35em 0 0", "font-size:0.78em", "color:" + MUTED)
+          S_TAG = st(
+              "display:inline-block", "margin:0 0.5em 0 0", "padding:0.12em 0.55em",
+              "border-radius:3px", "background:#eef2f6", "color:#41586f",
+              "font-weight:600", "letter-spacing:0.02em",
+          )
+          S_TAG_AWARD = st(
+              "display:inline-block", "margin:0 0.5em 0 0", "padding:0.12em 0.55em",
+              "border-radius:3px", "background:#fdf1dc", "color:#8a5a12",
+              "font-weight:600", "letter-spacing:0.02em",
+          )
+          S_DOI = st("word-break:break-word")
+
+
+          # ----------------------------------------------------------------------
+          # Text helpers
           # ----------------------------------------------------------------------
           def esc(text):
               return escape(text, quote=False)
@@ -87,7 +159,8 @@ jobs:
                   return ""
               text = re.sub(r"[{}]", "", text)
               text = text.replace("\\&", "&").replace("\\%", "%").replace("\\_", "_")
-              text = re.sub(r"~", " ", text)
+              text = text.replace("~", " ")
+              text = text.replace("---", "\u2014").replace("--", "\u2013")
               text = re.sub(r"\s+", " ", text).strip()
               return text.strip(" .,")
 
@@ -105,7 +178,7 @@ jobs:
                       last, first = name.split(",", 1)
                       name = f"{first.strip()} {last.strip()}".strip()
                   if any(h.lower() in name.lower() for h in HIGHLIGHT):
-                      names.append(f"<strong>{esc(name)}</strong>")
+                      names.append("<strong>%s</strong>" % esc(name))
                   else:
                       names.append(esc(name))
               if len(names) == 1:
@@ -119,22 +192,21 @@ jobs:
               pages = clean_text(raw)
               if not pages:
                   return ""
-              pages = re.sub(r"\s*-{1,3}\s*", "\u2013", pages)
-              label = "pp." if "\u2013" in pages else "p."
-              return f"{label} {pages}"
+              pages = re.sub(r"\s*[-\u2013\u2014]+\s*", "\u2013", pages)
+              return ("pp. " if "\u2013" in pages else "p. ") + pages
 
 
           def build_venue(entry, etype):
-              """Return the venue string for an entry, without any links."""
+              """Venue string for an entry, without any links."""
               bits = []
               if etype == "article":
                   main = clean_text(entry.get("journal", ""))
                   vol = clean_text(entry.get("volume", ""))
                   num = clean_text(entry.get("number", ""))
                   if vol:
-                      bits.append(f"vol. {vol}")
+                      bits.append("vol. " + vol)
                   if num:
-                      bits.append(f"no. {num}")
+                      bits.append("no. " + num)
               elif etype in ("inproceedings", "incollection"):
                   main = clean_text(entry.get("booktitle", ""))
                   pub = clean_text(entry.get("publisher", ""))
@@ -160,12 +232,10 @@ jobs:
               if pages:
                   bits.append(pages)
 
-              venue = esc(main) if main else ""
-              if venue:
-                  venue = f"<em>{venue}</em>"
+              venue = "<em>%s</em>" % esc(main) if main else ""
               tail = ", ".join(esc(b) for b in bits)
               if venue and tail:
-                  return f"{venue}, {tail}"
+                  return venue + ", " + tail
               return venue or tail
 
 
@@ -196,52 +266,18 @@ jobs:
               total += 1
 
           # ----------------------------------------------------------------------
-          # Render
+          # Render: inline styles only, no <style>, no classes, no pseudo-elements
           # ----------------------------------------------------------------------
-          CSS = """
-          .pubs{--pub-ink:#1c1c1e;--pub-muted:#5f6368;--pub-rule:#e3e5e8;--pub-accent:#0b4f8a;
-            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-            color:var(--pub-ink);line-height:1.55;max-width:60em;margin:0 auto}
-          .pubs *{box-sizing:border-box}
-          .pubs-meta{font-size:.85em;color:var(--pub-muted);margin:0 0 2em;letter-spacing:.02em;
-            text-transform:uppercase}
-          .pubs-year{margin:0 0 2.6em}
-          .pubs-year-title{font-size:1.5em;font-weight:700;margin:0 0 .1em;padding:0;
-            color:var(--pub-accent);letter-spacing:.01em;border:0}
-          .pubs-year-rule{height:3px;background:var(--pub-accent);opacity:.18;border-radius:2px;
-            margin:0 0 1.2em}
-          .pubs-group{margin:0 0 1.6em}
-          .pubs-group-title{font-size:.78em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-            color:var(--pub-muted);margin:0 0 .7em;padding:0;border:0}
-          .pubs-list{list-style:none;margin:0;padding:0;counter-reset:pub}
-          .pub{counter-increment:pub;position:relative;padding:.55em 0 .75em 2.6em;
-            border-bottom:1px solid var(--pub-rule)}
-          .pub:last-child{border-bottom:0}
-          .pub::before{content:counter(pub);position:absolute;left:0;top:.62em;width:1.9em;
-            text-align:right;font-size:.82em;font-variant-numeric:tabular-nums;color:#b6bcc4}
-          .pub-title{font-weight:600;font-size:1.02em;margin:0 0 .18em}
-          .pub-authors{font-size:.94em;color:#3b3f45;margin:0 0 .12em}
-          .pub-venue{font-size:.92em;color:var(--pub-muted)}
-          .pub-extra{margin-top:.35em;font-size:.78em;color:var(--pub-muted)}
-          .pub-tag{display:inline-block;padding:.12em .55em;margin-right:.5em;border-radius:3px;
-            background:#eef2f6;color:#41586f;font-weight:600;letter-spacing:.02em}
-          .pub-tag-award{background:#fdf1dc;color:#8a5a12}
-          .pub-doi{font-variant-numeric:tabular-nums;word-break:break-all}
-          @media (max-width:600px){.pub{padding-left:2.1em}.pubs-year-title{font-size:1.3em}}
-          """
-
           with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-              f.write('<div class="pubs">\n')
-              f.write("<style>%s</style>\n" % CSS)
-              f.write(
-                  '  <p class="pubs-meta">%d publications &middot; updated %s</p>\n'
-                  % (total, date.today().strftime("%d %B %Y"))
-              )
+              f.write("<div%s>\n" % S_WRAP)
+
+              if SHOW_META:
+                  f.write("  <p%s>%d publications &middot; updated %s</p>\n"
+                          % (S_META, total, date.today().strftime("%d %B %Y")))
 
               for year in sorted(by_year.keys(), key=year_key, reverse=True):
-                  f.write('  <section class="pubs-year">\n')
-                  f.write('    <h2 class="pubs-year-title">%s</h2>\n' % esc(year))
-                  f.write('    <div class="pubs-year-rule"></div>\n')
+                  f.write("  <div%s>\n" % S_YEAR)
+                  f.write("    <h2%s>%s</h2>\n" % (S_YEAR_H, esc(year)))
 
                   groups = sorted(by_year[year].items(), key=lambda kv: TYPE_RANK.get(kv[0], 99))
                   merged = []
@@ -253,10 +289,11 @@ jobs:
                           merged.append((label, list(entries)))
 
                   for label, entries in merged:
-                      f.write('    <div class="pubs-group">\n')
-                      f.write('      <h3 class="pubs-group-title">%s</h3>\n' % esc(label))
-                      f.write('      <ol class="pubs-list">\n')
-                      for entry in entries:
+                      f.write("    <div%s>\n" % S_GROUP)
+                      f.write("      <h3%s>%s</h3>\n" % (S_GROUP_H, esc(label)))
+                      f.write("      <ol%s>\n" % S_LIST)
+
+                      for i, entry in enumerate(entries):
                           etype = entry.get("ENTRYTYPE", "misc").lower()
                           title = esc(clean_text(entry.get("title", "Untitled")))
                           authors = fmt_authors(entry.get("author", "") or entry.get("editor", ""))
@@ -265,26 +302,28 @@ jobs:
                           extra = []
                           note = clean_text(entry.get("note", ""))
                           if note and len(note) < 120:
-                              award = any(w in note.lower() for w in ("award", "medal", "prize", "best paper"))
-                              cls = "pub-tag pub-tag-award" if award else "pub-tag"
-                              extra.append('<span class="%s">%s</span>' % (cls, esc(note)))
+                              award = any(w in note.lower() for w in ("award", "medal", "prize"))
+                              extra.append("<span%s>%s</span>"
+                                           % (S_TAG_AWARD if award else S_TAG, esc(note)))
                           doi = clean_text(entry.get("doi", ""))
                           if SHOW_DOI and doi:
                               doi = re.sub(r"^https?://(dx\.)?doi\.org/", "", doi)
-                              extra.append('<span class="pub-doi">DOI: %s</span>' % esc(doi))
+                              extra.append("<span%s>DOI: %s</span>" % (S_DOI, esc(doi)))
 
-                          f.write('        <li class="pub">\n')
-                          f.write('          <div class="pub-title">%s</div>\n' % title)
+                          last = (i == len(entries) - 1)
+                          f.write("        <li%s>\n" % (S_ITEM_LAST if last else S_ITEM))
+                          f.write("          <div%s>%s</div>\n" % (S_TITLE, title))
                           if authors:
-                              f.write('          <div class="pub-authors">%s</div>\n' % authors)
+                              f.write("          <div%s>%s</div>\n" % (S_AUTHORS, authors))
                           if venue:
-                              f.write('          <div class="pub-venue">%s</div>\n' % venue)
+                              f.write("          <div%s>%s</div>\n" % (S_VENUE, venue))
                           if extra:
-                              f.write('          <div class="pub-extra">%s</div>\n' % " ".join(extra))
+                              f.write("          <div%s>%s</div>\n" % (S_EXTRA, " ".join(extra)))
                           f.write("        </li>\n")
+
                       f.write("      </ol>\n")
                       f.write("    </div>\n")
-                  f.write("  </section>\n")
+                  f.write("  </div>\n")
               f.write("</div>\n")
 
           print("Wrote %s with %d entries across %d years." % (OUTPUT_FILE, total, len(by_year)))
