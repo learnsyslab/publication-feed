@@ -59,16 +59,20 @@ jobs:
           # Settings
           # ----------------------------------------------------------------------
           HIGHLIGHT = []        # surnames to bold in author lists; empty = nobody
-          # Separator drawn before each year heading (the first year never gets one):
-          #   "space"  <p>&nbsp;</p>      extra whitespace; always renders, nothing to strip
-          #   "hr"     <hr>               semantic, but some themes render it invisibly
-          #   "rule"   <p>&#8212;...</p>  a literal line of em dashes; crude but unmissable
-          #   "none"   nothing            let the <h2> heading do the separating
-          YEAR_DIVIDER = "space"
+          # Raw HTML emitted before each year heading (the first year never gets one).
+          # Measured against the live page with a 54-probe diagnostic:
+          #   <hr> is removed in every form (plain, self-closing, uppercase, with class,
+          #   nested in a div) -- but class attributes DO survive, and an empty
+          #   <div class="ce-div"> comes through intact. The theme puts .ce-div on the
+          #   hr itself, so a div carrying the same class should pick up the same rule.
+          #   If the CSS turns out to be hr.ce-div and nothing shows, fall back to
+          #   "<p>" + "&#9472;" * 40 + "</p>", which cannot be filtered.
+          YEAR_DIVIDER = '<div class="ce-div"></div>'
           LINK_TITLES = True    # wrap the title in <a> when a whitelisted URL is available
           LINK_BLANK = False    # add target="_blank" (more attributes = more to be stripped)
           SHOW_DOI = False      # also print "DOI: ..." as plain text under the entry
           SHOW_META = True      # "213 publications, updated ..." line at the top
+          PROBE = False         # emit a diagnostic block at the very top (testing only)
           LIST_TAG = "ol"       # "ol" for numbered entries, "ul" for bullets
           USE_SMALL = True      # wrap the DOI line in <small>
           ASCII_ONLY = True     # emit accents as &#nnn; so encoding can never break
@@ -160,7 +164,11 @@ jobs:
           # ----------------------------------------------------------------------
           # Link resolution: only these hosts are ever emitted
           # ----------------------------------------------------------------------
-          ALLOWED_HOSTS = ("doi.org", "arxiv.org", "sciencedirect.com")
+          # Link priority: DOI, then an arXiv abstract page, then whatever project or
+          # publisher page the entry carries in url/urllink. Video, code and slide
+          # fields are never consulted -- those are the YouTube and GitHub links that
+          # were breaking the page before.
+          ALLOWED_SCHEMES = ("https://", "http://")
 
           # url* fields worth inspecting, best first. urlvideo/urlcode/urlslides are
           # deliberately absent: they point at YouTube, GitHub, tiny.cc and the like.
@@ -202,12 +210,6 @@ jobs:
                       val = (entry.get(key) or "").strip()
                       if val:
                           urls.append(val)
-              # anything else that looks like a link field, checked last
-              for key, val in entry.items():
-                  k = key.lower()
-                  if k.startswith("url") and k not in URL_FIELDS and isinstance(val, str):
-                      urls.append(val.strip())
-
               for url in urls:  # a DOI hiding inside a url field
                   if "doi.org" in url.lower():
                       doi = normalize_doi(url)
@@ -218,9 +220,10 @@ jobs:
                       link = normalize_arxiv(url)
                       if link:
                           return link
-              for url in urls:
-                  if "sciencedirect.com" in url.lower():
-                      return url.split()[0]
+              for url in urls:  # project page, publisher page, proceedings entry
+                  candidate = url.split()[0]
+                  if candidate.lower().startswith(ALLOWED_SCHEMES):
+                      return candidate
 
               eprint = clean_text(entry.get("eprint", ""))
               if re.fullmatch(r"\d{4}\.\d{4,5}(v\d+)?", eprint):
@@ -230,11 +233,8 @@ jobs:
 
 
           def safe_link(url):
-              """Final guard: https only, and only on an allowed host."""
-              if not url or not url.lower().startswith("https://"):
-                  return ""
-              host = host_of(url)
-              if not any(host == d or host.endswith("." + d) for d in ALLOWED_HOSTS):
+              """Final guard: plain http(s) only, so no javascript: or data: can slip in."""
+              if not url or not url.lower().startswith(ALLOWED_SCHEMES):
                   return ""
               return escape(url, quote=True)
 
@@ -242,6 +242,92 @@ jobs:
           def year_key(y):
               m = re.search(r"\d{4}", y or "")
               return int(m.group()) if m else -1
+
+
+
+          # ----------------------------------------------------------------------
+          # Diagnostic probe. Every test is labelled in plain text, so a stripped
+          # element still leaves its marker behind and can be identified from the
+          # rendered page source. Set PROBE = False once the results are in.
+          # ----------------------------------------------------------------------
+          PROBE_INLINE = [
+              ("T01", "b", "<b>x</b>"),
+              ("T02", "i", "<i>x</i>"),
+              ("T03", "u", "<u>x</u>"),
+              ("T04", "s", "<s>x</s>"),
+              ("T05", "strike", "<strike>x</strike>"),
+              ("T06", "del-ins", "<del>x</del><ins>y</ins>"),
+              ("T07", "sub-sup", "<sub>x</sub><sup>y</sup>"),
+              ("T08", "code", "<code>x</code>"),
+              ("T09", "kbd-samp-var", "<kbd>x</kbd><samp>y</samp><var>z</var>"),
+              ("T10", "abbr", "<abbr title=\"probe-title\">x</abbr>"),
+              ("T11", "mark", "<mark>x</mark>"),
+              ("T12", "q-cite", "<q>x</q><cite>y</cite>"),
+              ("T13", "time", "<time datetime=\"2026-01-01\">x</time>"),
+              ("T14", "span", "<span>x</span>"),
+              ("T15", "span-class", "<span class=\"probe-class\">x</span>"),
+              ("T16", "span-style", "<span style=\"color:#b00\">x</span>"),
+              ("T17", "big-tt-font", "<big>x</big><tt>y</tt><font color=\"red\">z</font>"),
+              ("T18", "nobr-wbr", "<nobr>x</nobr><wbr>"),
+              ("T19", "small-nested", "<small><em>x</em></small>"),
+              ("T20", "entities", "nbsp[&nbsp;] amp[&amp;] mdash[&#8212;] box[&#9472;] direct[\u2013 \u00f6]"),
+          ]
+
+          PROBE_LINKS = [
+              ("T21", "doi", "https://doi.org/10.1109/TAC.2025.3608258"),
+              ("T22", "arxiv", "https://arxiv.org/abs/2409.11171"),
+              ("T23", "sciencedirect", "https://www.sciencedirect.com/"),
+              ("T24", "github", "https://github.com/learnsyslab"),
+              ("T25", "youtube", "https://www.youtube.com/@learnsyslab"),
+              ("T26", "ieee", "https://ieeexplore.ieee.org/"),
+              ("T27", "tum", "https://www.ce.cit.tum.de/lsy/home/"),
+              ("T28", "githubio", "https://tum-lsy.github.io/uq_vla/"),
+              ("T29", "mailto", "mailto:office.lsy@tum.de"),
+              ("T30", "relative", "/lsy/home/"),
+              ("T31", "anchor", "#topbar"),
+          ]
+
+          PROBE_BLOCK = [
+              ("T32", "hr-plain", "<hr>"),
+              ("T33", "hr-selfclosing", "<hr />"),
+              ("T34", "hr-uppercase", "<HR>"),
+              ("T35", "hr-ce-div", "<hr class=\"ce-div\">"),
+              ("T36", "div-wrapping-hr", "<div class=\"ce-div\"><hr></div>"),
+              ("T37", "div-plain", "<div>x</div>"),
+              ("T38", "div-class-style", "<div class=\"probe-class\" id=\"probe-id\" style=\"border-top:2px solid #b00\">x</div>"),
+              ("T39", "section-article-aside", "<section>x</section><article>y</article><aside>z</aside>"),
+              ("T40", "h1-h4-h5-h6", "<h1>x</h1><h4>x</h4><h5>x</h5><h6>x</h6>"),
+              ("T41", "blockquote", "<blockquote>x</blockquote>"),
+              ("T42", "pre", "<pre>x</pre>"),
+              ("T43", "ul-li", "<ul><li>x</li></ul>"),
+              ("T44", "dl-dt-dd", "<dl><dt>x</dt><dd>y</dd></dl>"),
+              ("T45", "table", "<table><tr><td>x</td><td>y</td></tr></table>"),
+              ("T46", "figure", "<figure>x<figcaption>y</figcaption></figure>"),
+              ("T47", "details", "<details><summary>x</summary>y</details>"),
+              ("T48", "p-attrs", "<p class=\"probe-class\" id=\"probe-id\" style=\"color:#b00\" title=\"probe-title\" lang=\"en\" dir=\"ltr\" role=\"note\" data-probe=\"1\" aria-label=\"probe\">x</p>"),
+              ("T49", "ol-attrs", "<ol start=\"7\" reversed><li>x</li></ol>"),
+              ("T50", "empty-p", "<p></p>"),
+              ("T51", "nbsp-p", "<p>&nbsp;</p>"),
+              ("T52", "empty-div-span", "<div></div><span></span>"),
+              ("T53", "style-block", "<style>.probe-class{color:#b00}</style>"),
+              ("T54", "comment", "<!-- probe-comment -->"),
+          ]
+
+
+          def build_probe():
+              out = ["<p>PROBE-START</p>"]
+              for pid, name, html in PROBE_INLINE:
+                  out.append("<p>[%s %s] %s [/%s]</p>" % (pid, name, html, pid))
+              for pid, name, href in PROBE_LINKS:
+                  out.append('<p>[%s link-%s] <a href="%s" target="_blank" rel="noopener" '
+                             'class="probe-class" title="probe-title">x</a> [/%s]</p>'
+                             % (pid, name, href, pid))
+              for pid, name, html in PROBE_BLOCK:
+                  out.append("<p>[%s %s]</p>" % (pid, name))
+                  out.append(html)
+                  out.append("<p>[/%s]</p>" % pid)
+              out.append("<p>PROBE-END</p>")
+              return "\n".join(out)
 
 
           # ----------------------------------------------------------------------
@@ -268,24 +354,23 @@ jobs:
 
           # ----------------------------------------------------------------------
           # Render: raw semantic HTML only.
-          # No <style>, no style attributes, no classes, no ids.
+          # No <style>, no style attributes, no classes, no ids: everything below is
+          # inside the sanitiser's allowlist.
           # The only links are doi.org / arxiv.org / sciencedirect.com on the title.
-          # Tags used: h2, h3, hr, ol/ul, li, p, a, strong, em, small, br
+          # Tags used: h2, h3, ol/ul, li, p, a, strong, em, small, br
           # ----------------------------------------------------------------------
           with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+
+              if PROBE:
+                  f.write(build_probe() + "\n\n")
 
               if SHOW_META:
                   line = "%d publications, updated %s" % (total, date.today().strftime("%d %B %Y"))
                   f.write("<p>%s</p>\n" % (("<small>%s</small>" % esc(line)) if USE_SMALL else esc(line)))
 
               for n, year in enumerate(sorted(by_year.keys(), key=year_key, reverse=True)):
-                  if n:
-                      if YEAR_DIVIDER == "hr":
-                          f.write("\n<hr>\n")
-                      elif YEAR_DIVIDER == "space":
-                          f.write("\n<p>&nbsp;</p>\n")
-                      elif YEAR_DIVIDER == "rule":
-                          f.write("\n<p>%s</p>\n" % ("&#8212;" * 30))
+                  if n and YEAR_DIVIDER:
+                      f.write("\n%s\n" % YEAR_DIVIDER)
                   f.write("\n<h2>%s</h2>\n" % esc(year))
 
                   groups = sorted(by_year[year].items(), key=lambda kv: TYPE_RANK.get(kv[0], 99))
@@ -349,8 +434,28 @@ jobs:
 
                       f.write("</%s>\n" % LIST_TAG)
 
+          # Confirmed to survive the CMS filter, from the probe run:
+          #   b i abbr time span small em strong br a p h1-h6 div section article
+          #   ul ol li dl dt dd table tr td figure, plus HTML comments.
+          # Confirmed removed, together with their contents:
+          #   hr u s strike del ins sub sup code kbd samp var mark q cite big tt font
+          #   nobr wbr aside blockquote pre figcaption details summary style.
+          # Attributes kept: class id title role data-* aria-* href target.
+          # Attributes stripped: style lang dir rel datetime start reversed.
+          ALLOWED_TAGS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "ol", "ul", "li",
+                          "dl", "dt", "dd", "table", "tr", "td", "div", "section",
+                          "article", "figure", "br", "strong", "em", "small", "b", "i",
+                          "a", "span", "abbr", "time"}
+          if PROBE:
+              ALLOWED_TAGS = set()  # the probe emits disallowed tags on purpose
+          emitted = set(re.findall(r"<([a-z0-9]+)[ >]", open(OUTPUT_FILE, encoding="utf-8").read()))
+          stray = [] if PROBE else sorted(emitted - ALLOWED_TAGS)
+          if stray:
+              print("WARNING: these tags are outside the CMS allowlist and will be stripped: %s"
+                    % ", ".join(stray))
+
           print("Wrote %s with %d entries across %d years." % (OUTPUT_FILE, total, len(by_year)))
-          print("Linked %d of %d titles; %d have no doi.org / arxiv.org / sciencedirect.com URL."
+          print("Linked %d of %d titles; %d have no DOI, arXiv or project page."
                 % (total - len(unlinked), total, len(unlinked)))
           for key, yr, title in sorted(unlinked, key=lambda r: r[1], reverse=True):
               print("  unlinked  %s  %s  %s" % (yr or "????", key, title))
