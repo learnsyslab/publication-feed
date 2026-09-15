@@ -2,7 +2,9 @@ name: Convert BibTeX to HTML List
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    # Every day at 04:17 UTC. Off-the-hour times are less likely to be
+    # queued behind the crowd of jobs scheduled on the hour.
+    - cron: '17 4 * * *'
   workflow_dispatch:
 
 permissions:
@@ -56,7 +58,8 @@ jobs:
           # ----------------------------------------------------------------------
           # Settings
           # ----------------------------------------------------------------------
-          HIGHLIGHT = ["Schoellig", "Schollig", "Sch\u00f6llig"]  # bolded in author lists
+          HIGHLIGHT = []        # surnames to bold in author lists; empty = nobody
+          YEAR_DIVIDER = True   # <hr> between year sections
           LINK_TITLES = True    # wrap the title in <a> when a whitelisted URL is available
           LINK_BLANK = False    # add target="_blank" (more attributes = more to be stripped)
           SHOW_DOI = False      # also print "DOI: ..." as plain text under the entry
@@ -262,7 +265,7 @@ jobs:
           # Render: raw semantic HTML only.
           # No <style>, no style attributes, no classes, no ids.
           # The only links are doi.org / arxiv.org / sciencedirect.com on the title.
-          # Tags used: h2, h3, ol/ul, li, p, a, strong, em, small, br
+          # Tags used: h2, h3, hr, ol/ul, li, p, a, strong, em, small, br
           # ----------------------------------------------------------------------
           with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
 
@@ -270,7 +273,9 @@ jobs:
                   line = "%d publications, updated %s" % (total, date.today().strftime("%d %B %Y"))
                   f.write("<p>%s</p>\n" % (("<small>%s</small>" % esc(line)) if USE_SMALL else esc(line)))
 
-              for year in sorted(by_year.keys(), key=year_key, reverse=True):
+              for n, year in enumerate(sorted(by_year.keys(), key=year_key, reverse=True)):
+                  if YEAR_DIVIDER and n:
+                      f.write("\n<hr>\n")
                   f.write("\n<h2>%s</h2>\n" % esc(year))
 
                   groups = sorted(by_year[year].items(), key=lambda kv: TYPE_RANK.get(kv[0], 99))
