@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   build:
@@ -17,62 +15,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Install Dependencies
-        run: pip install bibtexparser
+      - name: Install bibtex2html
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bibtex2html
 
       - name: Fetch and Convert BibTeX
         run: |
-          cat << 'EOF' > convert.py
-          import urllib.request
-          import bibtexparser
-          from collections import defaultdict
+          # Fetch the raw .bib file
+          curl -sL -A "Mozilla/5.0" "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib" -o library.bib
 
-          url = "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib"
-          
-          # Add User-Agent header to avoid 403 Forbidden errors
-          req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+          # Convert BibTeX to a clean HTML snippet (no full HTML document wrappers)
+          bibtex2html -a -nodoc -dl -citeids -o output library.bib
 
-          try:
-              with urllib.request.urlopen(req) as response:
-                  bib_text = response.read().decode('utf-8', errors='ignore')
-          except Exception as e:
-              print(f"Error fetching URL: {e}")
-              exit(1)
+          # Rename output to index.html
+          mv output.html index.html
 
-          # Parse BibTeX safely ignoring LaTeX errors
-          parser = bibtexparser.bparser.BibTexParser(common_strings=True, ignore_errors=True)
-          bib_database = bibtexparser.loads(bib_text, parser=parser)
-
-          by_year = defaultdict(list)
-          for entry in bib_database.entries:
-              year = entry.get("year", "Other")
-              by_year[year].append(entry)
-
-          with open("index.html", "w", encoding="utf-8") as f:
-              f.write('<div class="publications-container">\n')
-              for year in sorted(by_year.keys(), reverse=True):
-                  f.write(f'  <h3>{year}</h3>\n  <ul class="publication-list">\n')
-                  for entry in by_year[year]:
-                      author = entry.get("author", "Unknown").replace("\n", " ")
-                      title = entry.get("title", "Untitled").replace("{", "").replace("}", "")
-                      venue = entry.get("journal", entry.get("booktitle", ""))
-                      link = entry.get("url", entry.get("doi", ""))
-                      
-                      title_html = f'<a href="{link}">{title}</a>' if link else title
-                      venue_html = f' — <em>{venue}</em>' if venue else ""
-                      
-                      f.write(f'    <li><strong>{title_html}</strong><br/>{author}{venue_html}</li>\n')
-                  f.write('  </ul>\n')
-              f.write('</div>\n')
-          EOF
-          python convert.py
-
-      - name: Commit HTML to Repository
+      - name: Commit and Push HTML
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
