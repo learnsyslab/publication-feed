@@ -22,14 +22,14 @@ jobs:
 
       - name: Fetch and Convert BibTeX
         run: |
-          # Fetch the raw .bib file
+          # 1. Download the BibTeX file
           curl -sL -A "Mozilla/5.0" "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib" -o library.bib
 
-          # Convert BibTeX to a clean HTML snippet (no full HTML document wrappers)
-          bibtex2html -a -nodoc -dl -citeids -o output library.bib
+          # 2. Convert BibTeX to HTML body list (sorted by year)
+          bibtex2html -a -d -nodoc -dl library.bib
 
-          # Rename output to index.html
-          mv output.html index.html
+          # 3. Rename generated output file to index.html
+          mv library.html index.html
 
       - name: Commit and Push HTML
         run: |
