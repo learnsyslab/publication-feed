@@ -7,11 +7,16 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -29,14 +34,19 @@ jobs:
 
           url = "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib"
           
-          # Custom parser configuration to ignore common LaTeX bib errors
-          parser = bibtexparser.bparser.BibTexParser(common_strings=True, ignore_errors=True)
-          
+          # Add User-Agent header to avoid 403 Forbidden errors
           req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-          with urllib.request.urlopen(req) as response:
-              bib_content = response.read().decode('utf-8', errors='ignore')
 
-          bib_database = bibtexparser.loads(bib_content, parser=parser)
+          try:
+              with urllib.request.urlopen(req) as response:
+                  bib_text = response.read().decode('utf-8', errors='ignore')
+          except Exception as e:
+              print(f"Error fetching URL: {e}")
+              exit(1)
+
+          # Parse BibTeX safely ignoring LaTeX errors
+          parser = bibtexparser.bparser.BibTexParser(common_strings=True, ignore_errors=True)
+          bib_database = bibtexparser.loads(bib_text, parser=parser)
 
           by_year = defaultdict(list)
           for entry in bib_database.entries:
@@ -62,6 +72,10 @@ jobs:
           EOF
           python convert.py
 
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
-        if: success()
+      - name: Commit HTML to Repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Auto-update publications HTML" || exit 0
+          git push
