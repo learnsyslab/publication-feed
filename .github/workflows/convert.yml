@@ -57,7 +57,9 @@ jobs:
           # Settings
           # ----------------------------------------------------------------------
           HIGHLIGHT = ["Schoellig", "Schollig", "Sch\u00f6llig"]  # bolded in author lists
-          SHOW_DOI = True       # DOI as plain text, never a link
+          LINK_TITLES = True    # wrap the title in <a> when a whitelisted URL is available
+          LINK_BLANK = False    # add target="_blank" (more attributes = more to be stripped)
+          SHOW_DOI = False      # also print "DOI: ..." as plain text under the entry
           SHOW_META = True      # "213 publications, updated ..." line at the top
           LIST_TAG = "ol"       # "ol" for numbered entries, "ul" for bullets
           USE_SMALL = True      # wrap the DOI line in <small>
@@ -125,55 +127,108 @@ jobs:
               return ", ".join(names[:-1]) + ", and " + names[-1]
 
 
-          def fmt_pages(raw):
-              pages = clean_text(raw)
-              if not pages:
-                  return ""
-              pages = re.sub(r"\s*[-\u2013\u2014]+\s*", "\u2013", pages)
-              return ("pp. " if "\u2013" in pages else "p. ") + pages
-
-
           def build_venue(entry, etype):
-              """Venue string for an entry, without any links."""
-              bits = []
+              """Just the venue name: no volume, number, pages or publisher."""
               if etype == "article":
                   main = clean_text(entry.get("journal", ""))
-                  vol = clean_text(entry.get("volume", ""))
-                  num = clean_text(entry.get("number", ""))
-                  if vol:
-                      bits.append("vol. " + vol)
-                  if num:
-                      bits.append("no. " + num)
               elif etype in ("inproceedings", "incollection"):
                   main = clean_text(entry.get("booktitle", ""))
-                  pub = clean_text(entry.get("publisher", ""))
-                  if pub:
-                      bits.append(pub)
               elif etype == "techreport":
-                  main = clean_text(entry.get("journal", "")) or clean_text(entry.get("booktitle", ""))
-                  inst = clean_text(entry.get("institution", ""))
-                  if not main:
-                      main = inst
-                  elif inst:
-                      bits.append(inst)
+                  main = (clean_text(entry.get("journal", ""))
+                          or clean_text(entry.get("booktitle", ""))
+                          or clean_text(entry.get("institution", "")))
               elif etype in ("phdthesis", "mastersthesis"):
                   kind = "PhD thesis" if etype == "phdthesis" else "Master's thesis"
-                  main = clean_text(entry.get("school", "")) or clean_text(entry.get("institution", ""))
-                  main = f"{kind}, {main}" if main else kind
+                  school = clean_text(entry.get("school", "")) or clean_text(entry.get("institution", ""))
+                  main = f"{kind}, {school}" if school else kind
               elif etype == "book":
                   main = clean_text(entry.get("publisher", "")) or clean_text(entry.get("series", ""))
               else:
                   main = clean_text(entry.get("howpublished", "")) or clean_text(entry.get("booktitle", ""))
 
-              pages = fmt_pages(entry.get("pages", ""))
-              if pages:
-                  bits.append(pages)
+              return "<em>%s</em>" % esc(main) if main else ""
 
-              venue = "<em>%s</em>" % esc(main) if main else ""
-              tail = ", ".join(esc(b) for b in bits)
-              if venue and tail:
-                  return venue + ", " + tail
-              return venue or tail
+
+          # ----------------------------------------------------------------------
+          # Link resolution: only these hosts are ever emitted
+          # ----------------------------------------------------------------------
+          ALLOWED_HOSTS = ("doi.org", "arxiv.org", "sciencedirect.com")
+
+          # url* fields worth inspecting, best first. urlvideo/urlcode/urlslides are
+          # deliberately absent: they point at YouTube, GitHub, tiny.cc and the like.
+          URL_FIELDS = ["url", "urllink", "urllink2", "urlabstract", "eprint"]
+
+
+          def normalize_doi(raw):
+              doi = clean_text(raw)
+              doi = re.sub(r"^\s*(doi:)?\s*", "", doi, flags=re.I)
+              doi = re.sub(r"^https?://(dx\.)?doi\.org/", "", doi, flags=re.I)
+              doi = doi.strip().rstrip(".,;")
+              return doi if doi.lower().startswith("10.") else ""
+
+
+          def host_of(url):
+              m = re.match(r"https?://([^/?#]+)", url.strip(), flags=re.I)
+              return re.sub(r"^www\.", "", m.group(1).lower()) if m else ""
+
+
+          def normalize_arxiv(url):
+              """https://arxiv.org/pdf/2409.11171v2.pdf -> https://arxiv.org/abs/2409.11171v2"""
+              m = re.search(r"arxiv\.org/(?:abs|pdf)/([^\s?#]+)", url, flags=re.I)
+              if not m:
+                  return ""
+              ident = m.group(1).rstrip("/")
+              ident = re.sub(r"\.pdf$", "", ident, flags=re.I)
+              return "https://arxiv.org/abs/" + ident
+
+
+          def pick_link(entry):
+              """Return a single URL on an allowed host, or "" if there is none."""
+              doi = normalize_doi(entry.get("doi", ""))
+              if doi:
+                  return "https://doi.org/" + doi
+
+              urls = []
+              for field in URL_FIELDS:
+                  for key in (field, field.upper()):
+                      val = (entry.get(key) or "").strip()
+                      if val:
+                          urls.append(val)
+              # anything else that looks like a link field, checked last
+              for key, val in entry.items():
+                  k = key.lower()
+                  if k.startswith("url") and k not in URL_FIELDS and isinstance(val, str):
+                      urls.append(val.strip())
+
+              for url in urls:  # a DOI hiding inside a url field
+                  if "doi.org" in url.lower():
+                      doi = normalize_doi(url)
+                      if doi:
+                          return "https://doi.org/" + doi
+              for url in urls:
+                  if "arxiv.org" in url.lower():
+                      link = normalize_arxiv(url)
+                      if link:
+                          return link
+              for url in urls:
+                  if "sciencedirect.com" in url.lower():
+                      return url.split()[0]
+
+              eprint = clean_text(entry.get("eprint", ""))
+              if re.fullmatch(r"\d{4}\.\d{4,5}(v\d+)?", eprint):
+                  return "https://arxiv.org/abs/" + eprint
+
+              return ""
+
+
+          def safe_link(url):
+              """Final guard: https only, and only on an allowed host."""
+              if not url or not url.lower().startswith("https://"):
+                  return ""
+              host = host_of(url)
+              if not any(host == d or host.endswith("." + d) for d in ALLOWED_HOSTS):
+                  return ""
+              return escape(url, quote=True)
 
 
           def year_key(y):
@@ -193,6 +248,7 @@ jobs:
           bib_db = bibtexparser.loads(bib_text, parser=parser)
 
           by_year = defaultdict(lambda: defaultdict(list))
+          unlinked = []
           total = 0
           for entry in bib_db.entries:
               etype = entry.get("ENTRYTYPE", "misc").lower()
@@ -204,8 +260,9 @@ jobs:
 
           # ----------------------------------------------------------------------
           # Render: raw semantic HTML only.
-          # No <style>, no style attributes, no classes, no ids, no links.
-          # Tags used: h2, h3, ol/ul, li, p, strong, em, small, br
+          # No <style>, no style attributes, no classes, no ids.
+          # The only links are doi.org / arxiv.org / sciencedirect.com on the title.
+          # Tags used: h2, h3, ol/ul, li, p, a, strong, em, small, br
           # ----------------------------------------------------------------------
           with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
 
@@ -253,7 +310,19 @@ jobs:
                           else:
                               doi_line = ""
 
-                          lines = ["<strong>%s</strong>" % title]
+                          link = safe_link(pick_link(entry)) if LINK_TITLES else ""
+                          if link:
+                              target = ' target="_blank"' if LINK_BLANK else ""
+                              head = '<a href="%s"%s><strong>%s</strong></a>' % (link, target, title)
+                          else:
+                              head = "<strong>%s</strong>" % title
+
+                          if not link:
+                              unlinked.append((entry.get("ID", "?"),
+                                               clean_text(entry.get("year", "")),
+                                               clean_text(entry.get("title", ""))[:70]))
+
+                          lines = [head]
                           if authors:
                               lines.append(authors)
                           if venue or venue_suffix:
@@ -266,6 +335,10 @@ jobs:
                       f.write("</%s>\n" % LIST_TAG)
 
           print("Wrote %s with %d entries across %d years." % (OUTPUT_FILE, total, len(by_year)))
+          print("Linked %d of %d titles; %d have no doi.org / arxiv.org / sciencedirect.com URL."
+                % (total - len(unlinked), total, len(unlinked)))
+          for key, yr, title in sorted(unlinked, key=lambda r: r[1], reverse=True):
+              print("  unlinked  %s  %s  %s" % (yr or "????", key, title))
           EOF
           python parse_bib.py
 
