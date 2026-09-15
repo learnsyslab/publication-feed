@@ -59,7 +59,12 @@ jobs:
           # Settings
           # ----------------------------------------------------------------------
           HIGHLIGHT = []        # surnames to bold in author lists; empty = nobody
-          YEAR_DIVIDER = True   # <hr> between year sections
+          # Separator drawn before each year heading (the first year never gets one):
+          #   "space"  <p>&nbsp;</p>      extra whitespace; always renders, nothing to strip
+          #   "hr"     <hr>               semantic, but some themes render it invisibly
+          #   "rule"   <p>&#8212;...</p>  a literal line of em dashes; crude but unmissable
+          #   "none"   nothing            let the <h2> heading do the separating
+          YEAR_DIVIDER = "space"
           LINK_TITLES = True    # wrap the title in <a> when a whitelisted URL is available
           LINK_BLANK = False    # add target="_blank" (more attributes = more to be stripped)
           SHOW_DOI = False      # also print "DOI: ..." as plain text under the entry
@@ -274,8 +279,13 @@ jobs:
                   f.write("<p>%s</p>\n" % (("<small>%s</small>" % esc(line)) if USE_SMALL else esc(line)))
 
               for n, year in enumerate(sorted(by_year.keys(), key=year_key, reverse=True)):
-                  if YEAR_DIVIDER and n:
-                      f.write("\n<hr>\n")
+                  if n:
+                      if YEAR_DIVIDER == "hr":
+                          f.write("\n<hr>\n")
+                      elif YEAR_DIVIDER == "space":
+                          f.write("\n<p>&nbsp;</p>\n")
+                      elif YEAR_DIVIDER == "rule":
+                          f.write("\n<p>%s</p>\n" % ("&#8212;" * 30))
                   f.write("\n<h2>%s</h2>\n" % esc(year))
 
                   groups = sorted(by_year[year].items(), key=lambda kv: TYPE_RANK.get(kv[0], 99))
