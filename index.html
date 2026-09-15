@@ -1,107 +1,4 @@
-<p>PROBE-START</p>
-<p>[T01 b] <b>x</b> [/T01]</p>
-<p>[T02 i] <i>x</i> [/T02]</p>
-<p>[T03 u] <u>x</u> [/T03]</p>
-<p>[T04 s] <s>x</s> [/T04]</p>
-<p>[T05 strike] <strike>x</strike> [/T05]</p>
-<p>[T06 del-ins] <del>x</del><ins>y</ins> [/T06]</p>
-<p>[T07 sub-sup] <sub>x</sub><sup>y</sup> [/T07]</p>
-<p>[T08 code] <code>x</code> [/T08]</p>
-<p>[T09 kbd-samp-var] <kbd>x</kbd><samp>y</samp><var>z</var> [/T09]</p>
-<p>[T10 abbr] <abbr title="probe-title">x</abbr> [/T10]</p>
-<p>[T11 mark] <mark>x</mark> [/T11]</p>
-<p>[T12 q-cite] <q>x</q><cite>y</cite> [/T12]</p>
-<p>[T13 time] <time datetime="2026-01-01">x</time> [/T13]</p>
-<p>[T14 span] <span>x</span> [/T14]</p>
-<p>[T15 span-class] <span class="probe-class">x</span> [/T15]</p>
-<p>[T16 span-style] <span style="color:#b00">x</span> [/T16]</p>
-<p>[T17 big-tt-font] <big>x</big><tt>y</tt><font color="red">z</font> [/T17]</p>
-<p>[T18 nobr-wbr] <nobr>x</nobr><wbr> [/T18]</p>
-<p>[T19 small-nested] <small><em>x</em></small> [/T19]</p>
-<p>[T20 entities] nbsp[&nbsp;] amp[&amp;] mdash[&#8212;] box[&#9472;] direct[– ö] [/T20]</p>
-<p>[T21 link-doi] <a href="https://doi.org/10.1109/TAC.2025.3608258" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T21]</p>
-<p>[T22 link-arxiv] <a href="https://arxiv.org/abs/2409.11171" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T22]</p>
-<p>[T23 link-sciencedirect] <a href="https://www.sciencedirect.com/" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T23]</p>
-<p>[T24 link-github] <a href="https://github.com/learnsyslab" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T24]</p>
-<p>[T25 link-youtube] <a href="https://www.youtube.com/@learnsyslab" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T25]</p>
-<p>[T26 link-ieee] <a href="https://ieeexplore.ieee.org/" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T26]</p>
-<p>[T27 link-tum] <a href="https://www.ce.cit.tum.de/lsy/home/" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T27]</p>
-<p>[T28 link-githubio] <a href="https://tum-lsy.github.io/uq_vla/" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T28]</p>
-<p>[T29 link-mailto] <a href="mailto:office.lsy@tum.de" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T29]</p>
-<p>[T30 link-relative] <a href="/lsy/home/" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T30]</p>
-<p>[T31 link-anchor] <a href="#topbar" target="_blank" rel="noopener" class="probe-class" title="probe-title">x</a> [/T31]</p>
-<p>[T32 hr-plain]</p>
-<hr>
-<p>[/T32]</p>
-<p>[T33 hr-selfclosing]</p>
-<hr />
-<p>[/T33]</p>
-<p>[T34 hr-uppercase]</p>
-<HR>
-<p>[/T34]</p>
-<p>[T35 hr-ce-div]</p>
-<hr class="ce-div">
-<p>[/T35]</p>
-<p>[T36 div-wrapping-hr]</p>
-<div class="ce-div"><hr></div>
-<p>[/T36]</p>
-<p>[T37 div-plain]</p>
-<div>x</div>
-<p>[/T37]</p>
-<p>[T38 div-class-style]</p>
-<div class="probe-class" id="probe-id" style="border-top:2px solid #b00">x</div>
-<p>[/T38]</p>
-<p>[T39 section-article-aside]</p>
-<section>x</section><article>y</article><aside>z</aside>
-<p>[/T39]</p>
-<p>[T40 h1-h4-h5-h6]</p>
-<h1>x</h1><h4>x</h4><h5>x</h5><h6>x</h6>
-<p>[/T40]</p>
-<p>[T41 blockquote]</p>
-<blockquote>x</blockquote>
-<p>[/T41]</p>
-<p>[T42 pre]</p>
-<pre>x</pre>
-<p>[/T42]</p>
-<p>[T43 ul-li]</p>
-<ul><li>x</li></ul>
-<p>[/T43]</p>
-<p>[T44 dl-dt-dd]</p>
-<dl><dt>x</dt><dd>y</dd></dl>
-<p>[/T44]</p>
-<p>[T45 table]</p>
-<table><tr><td>x</td><td>y</td></tr></table>
-<p>[/T45]</p>
-<p>[T46 figure]</p>
-<figure>x<figcaption>y</figcaption></figure>
-<p>[/T46]</p>
-<p>[T47 details]</p>
-<details><summary>x</summary>y</details>
-<p>[/T47]</p>
-<p>[T48 p-attrs]</p>
-<p class="probe-class" id="probe-id" style="color:#b00" title="probe-title" lang="en" dir="ltr" role="note" data-probe="1" aria-label="probe">x</p>
-<p>[/T48]</p>
-<p>[T49 ol-attrs]</p>
-<ol start="7" reversed><li>x</li></ol>
-<p>[/T49]</p>
-<p>[T50 empty-p]</p>
-<p></p>
-<p>[/T50]</p>
-<p>[T51 nbsp-p]</p>
-<p>&nbsp;</p>
-<p>[/T51]</p>
-<p>[T52 empty-div-span]</p>
-<div></div><span></span>
-<p>[/T52]</p>
-<p>[T53 style-block]</p>
-<style>.probe-class{color:#b00}</style>
-<p>[/T53]</p>
-<p>[T54 comment]</p>
-<!-- probe-comment -->
-<p>[/T54]</p>
-<p>PROBE-END</p>
-
-<p><small>213 publications, updated 15 September 2026</small></p>
+<p><small>215 publications, updated 15 September 2026</small></p>
 
 <h2>2026</h2>
 <h3>Journal Articles</h3>
@@ -145,16 +42,16 @@
   <li><a href="https://arxiv.org/abs/2510.11103"><strong>A Primer on SO(3) Action Representations in Deep Reinforcement Learning</strong></a><br>
       Martin Schuck, Sherif Samy, and Angela P. Schoellig<br>
       <em>Proc. of the International Conference on Learning Representations (ICLR)</em> [Accepted]</li>
-  <li><strong>From Demonstrations to Safe Deployment: Path-Consistent Safety Filtering for Diffusion Policies</strong><br>
+  <li><a href="https://tum-lsy.github.io/pacs/"><strong>From Demonstrations to Safe Deployment: Path-Consistent Safety Filtering for Diffusion Policies</strong></a><br>
       Ralf R&#246;mer, Julian Balletshofer, Jakob Thumm, Marco Pavone, Angela P. Schoellig, and Matthias Althoff<br>
       <em>Proc. of the IEEE International Conference on Robotics and Automation (ICRA)</em> [Accepted]</li>
 </ol>
 <h3>Preprints and Submitted Work</h3>
 <ol>
-  <li><strong>Uncertainty Quantification for Flow-Based Vision-Language-Action Models</strong><br>
+  <li><a href="https://tum-lsy.github.io/uq_vla/"><strong>Uncertainty Quantification for Flow-Based Vision-Language-Action Models</strong></a><br>
       Ralf R&#246;mer, Maximilian Seeliger, Saida Liu, Ben Sturgis, Marco Bagatella, Daniel Marta, Andreas Krause, and Angela P. Schoellig<br>
       <em>arXiv Preprint</em></li>
-  <li><strong>Crazyflow: An Accurate, GPU-Accelerated, Differentiable Drone Simulator in JAX</strong><br>
+  <li><a href="https://learnsyslab.github.io/crazyflow/"><strong>Crazyflow: An Accurate, GPU-Accelerated, Differentiable Drone Simulator in JAX</strong></a><br>
       Martin Schuck, Marcel P. Rath, Yufei Hua, Abhishek Goudar, SiQi Zhou, and Angela P. Schoellig<br>
       <em>arXiv Preprint</em></li>
   <li><a href="https://arxiv.org/abs/2603.10227"><strong>Perceptive Hierarchical-Task MPC for Sequential Mobile Manipulation in Unstructured Semi-Static Environments</strong></a><br>
@@ -171,7 +68,7 @@
       <em>Abstract and Poster, in the Workshop on Semantics for Reliable Robot Autonomy (SRRA) at the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2025</h2>
 <h3>Journal Articles</h3>
@@ -209,7 +106,7 @@
 </ol>
 <h3>Conference Papers</h3>
 <ol>
-  <li><strong>Failure Prediction at Runtime for Generative Robot Policies</strong><br>
+  <li><a href="https://tum-lsy.github.io/fiper_website/"><strong>Failure Prediction at Runtime for Generative Robot Policies</strong></a><br>
       Ralf R&#246;mer, Adrian Kobras, Luca Worbis, and Angela P. Schoellig<br>
       <em>Proc. of the Neural Information Processing Systems (NeurIPS)</em> [Accepted]</li>
   <li><a href="https://arxiv.org/abs/2512.14350"><strong>Fine-Tuning of Neural Network Approximate MPC without Retraining via Bayesian Optimization</strong></a><br>
@@ -233,7 +130,7 @@
 </ol>
 <h3>Preprints and Submitted Work</h3>
 <ol>
-  <li><strong>CoRe-GS: Coarse-to-Refined Gaussian Splatting with Semantic Object Focus</strong><br>
+  <li><a href="https://hannahhaensen.github.io/core-gs/"><strong>CoRe-GS: Coarse-to-Refined Gaussian Splatting with Semantic Object Focus</strong></a><br>
       Hannah Schieber, Dominik Frischmann, Victor Schaack, Simon Boche, Angela Schoellig, Stefan Leutenegger, and Daniel Roth<br>
       <em>arXiv Preprint</em> [Under review]</li>
   <li><a href="https://arxiv.org/abs/2509.22914"><strong>ARMimic: Learning Robotic Manipulation from Passive Human Demonstrations in Augmented Reality</strong></a><br>
@@ -250,7 +147,7 @@
       <em>Abstract and Poster, in the Workshop on Differentiable Systems and Scientific Machine Learning at EurIPS</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2024</h2>
 <h3>Journal Articles</h3>
@@ -317,7 +214,7 @@
       <em>Abstract and Poster, in the Back to the Future: Robot Learning Going Real Workshop at the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2023</h2>
 <h3>Journal Articles</h3>
@@ -369,7 +266,7 @@
       <em>Short Paper in the Embracing Contacts Workshop at the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2022</h2>
 <h3>Journal Articles</h3>
@@ -401,6 +298,9 @@
 </ol>
 <h3>Conference Papers</h3>
 <ol>
+  <li><a href="https://doi.org/10.1109/CDC51059.2022.9992834"><strong>Robust Predictive Output-Feedback Safety Filter for Uncertain Nonlinear Control Systems</strong></a><br>
+      Lukas Brunke, Siqi Zhou, and Angela P. Schoellig<br>
+      <em>Proc. of the IEEE Conference on Decision and Control (CDC)</em></li>
   <li><a href="https://doi.org/10.1109/IROS47612.2022.9981520"><strong>Gaussian Variational Inference with Covariance Constraints Applied to Range-only Localization</strong></a><br>
       Abhishek Goudar, Wenda Zhao, Timothy D. Barfoot, and Angela P. Schoellig<br>
       <em>Proc. of the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</em></li>
@@ -410,7 +310,7 @@
   <li><a href="https://doi.org/10.23919/ACC53348.2022.9867643"><strong>Fusion of Machine Learning and MPC under Uncertainty: What Advances Are on the Horizon?</strong></a><br>
       Ali Mesbah, Kim P. Wabersich, Angela P. Schoellig, Melanie N. Zeilinger, Sergio Lucia, Thomas A. Badgwell, and Joel A. Paulson<br>
       <em>Proc. of the American Control Conference (ACC)</em></li>
-  <li><strong>Barrier Bayesian Linear Regression: Online Learning of Control Barrier Conditions for Safety-Critical Control of Uncertain Systems</strong><br>
+  <li><a href="https://proceedings.mlr.press/v168/brunke22a.html"><strong>Barrier Bayesian Linear Regression: Online Learning of Control Barrier Conditions for Safety-Critical Control of Uncertain Systems</strong></a><br>
       Lukas Brunke, Siqi Zhou, and Angela P. Schoellig<br>
       <em>Proc. of the Learning for Dynamics and Control Conference (L4DC)</em></li>
   <li><strong>Stochastic modeling of tag installation error for robust on-manifold tag-based visual-inertial localization</strong><br>
@@ -418,7 +318,7 @@
       <em>Proc. of the Canadian Society of Civil Engineering Annual Conference (CSCE)</em> [Accepted]</li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2021</h2>
 <h3>Journal Articles</h3>
@@ -450,6 +350,9 @@
 </ol>
 <h3>Conference Papers</h3>
 <ol>
+  <li><a href="https://doi.org/10.1109/CRV52889.2021.00031"><strong>Self-Calibration of the Offset Between GPS and Semantic Map Frames for Robust Localization</strong></a><br>
+      Wei-Kang Tseng, Angela P. Schoellig, and Timothy D. Barfoot<br>
+      <em>Proc. of the Conference on Robots and Vision (CRV)</em></li>
   <li><a href="https://doi.org/10.15607/RSS.2021.XVII.029"><strong>Radar Odometry Combining Probabilistic Estimation and Unsupervised Feature Learning</strong></a><br>
       Keenan Burnett, David J. Yoon, Angela P. Schoellig, and Timothy D. Barfoot<br>
       <em>Proc. of Robotics: Science and Systems (RSS)</em></li>
@@ -470,7 +373,7 @@
       <em>Proc. of the IEEE International Conference on Intelligent Robots and Systems (IROS)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2020</h2>
 <h3>Journal Articles</h3>
@@ -517,12 +420,12 @@
   <li><a href="https://doi.org/10.1109/ICRA40945.2020.9197521"><strong>Context-aware Cost Shaping to Reduce the Impact of Model Error in Safe, Receding Horizon Control</strong></a><br>
       Christopher D. McKinnon and Angela P. Schoellig<br>
       <em>Proc. of the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
-  <li><strong>Experience Selection Using Dynamics Similarity for Efficient Multi-Source Transfer Learning Between Robots</strong><br>
+  <li><a href="https://ieeexplore.ieee.org/document/9196744"><strong>Experience Selection Using Dynamics Similarity for Efficient Multi-Source Transfer Learning Between Robots</strong></a><br>
       Michael J. Sorocky, Siqi Zhou, and Angela P. Schoellig<br>
       <em>Proc. of the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2019</h2>
 <h3>Journal Articles</h3>
@@ -604,7 +507,7 @@
       <em>Abstract and Presentation, in Proc. of the Resilient Robot Teams Workshop at the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2018</h2>
 <h3>Journal Articles</h3>
@@ -633,7 +536,7 @@
   <li><a href="https://arxiv.org/abs/1807.05290"><strong>Adaptive Model Predictive Control for High-Accuracy Trajectory Tracking in Changing Conditions</strong></a><br>
       Karime Pereida and Angela P. Schoellig<br>
       <em>Proc. of the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</em></li>
-  <li><strong>Flatness-based Model Predictive Control for Quadrotor Trajectory Tracking</strong><br>
+  <li><a href="http://www.dynsyslab.org/wp-content/papercite-data/pdf/greeff-iros18.pdf"><strong>Flatness-based Model Predictive Control for Quadrotor Trajectory Tracking</strong></a><br>
       Melissa Greeff and Angela P. Schoellig<br>
       <em>Proc. of the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</em></li>
   <li><a href="https://doi.org/10.1007/978-3-030-33950-0_43"><strong>Hybrid Model Predictive Control for Crosswind Stabilization of Hybrid Airships</strong></a><br>
@@ -656,7 +559,7 @@
       <em>arXiv</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2017</h2>
 <h3>Journal Articles</h3>
@@ -673,7 +576,7 @@
   <li><a href="https://arxiv.org/abs/1705.08551"><strong>Safe model-based reinforcement learning with stability guarantees</strong></a><br>
       Felix Berkenkamp, Matteo Turchetta, Angela P. Schoellig, and Andreas Krause<br>
       <em>Proc. of Neural Information Processing Systems (NIPS)</em></li>
-  <li><strong>Towards visual teach &amp; repeat for GPS-denied flight of a fixed-wing UAV</strong><br>
+  <li><a href="https://link.springer.com/chapter/10.1007/978-3-319-67361-5_31"><strong>Towards visual teach &amp; repeat for GPS-denied flight of a fixed-wing UAV</strong></a><br>
       Michael Warren, Michael Paton, Kirk MacTavish, Angela P. Schoellig, and Tim D. Barfoot<br>
       <em>Proc. of the 11th Conference on Field and Service Robotics (FSR)</em></li>
   <li><a href="https://doi.org/10.1109/IROS.2017.8206342"><strong>Multi-Robot Transfer Learning: A Dynamical System Perspective</strong></a><br>
@@ -711,7 +614,7 @@
       <em>arXiv</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2016</h2>
 <h3>Journal Articles</h3>
@@ -758,7 +661,7 @@
 </ol>
 <h3>Talks, Posters and Videos</h3>
 <ol>
-  <li><strong>Rock fragmentation analysis using UAV technology</strong><br>
+  <li><a href="http://publications.aols.org/OPS-Magazine/2016Fall/"><strong>Rock fragmentation analysis using UAV technology</strong></a><br>
       Thomas Bamford, Kamran Esmaeili, and Angela P. Schoellig<br>
       <em>Professional Magazine Article, Ontario Professional Surveyor (OPS) Magazine, Assn. of Ontario Land Surveyors</em></li>
   <li><strong>Quantifying the value of drone-delivered AEDs in cardiac arrest response</strong><br>
@@ -772,7 +675,7 @@
       <em>Video Submission, Assn. of the Advancement of Artificial Intelligence (AAAI) AI Video Competition</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2015</h2>
 <h3>Conference Papers</h3>
@@ -799,7 +702,7 @@
       <em>Abstract and Presentation in Proc. of the Second Machine Learning in Planning and Control of Robot Motion Workshop at the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2014</h2>
 <h3>Journal Articles</h3>
@@ -813,7 +716,7 @@
 </ol>
 <h3>Conference Papers</h3>
 <ol>
-  <li><strong>Learning-based robust control: guaranteeing stability while improving performance</strong><br>
+  <li><a href="http://www.cs.unm.edu/amprg/mlpc14Workshop/"><strong>Learning-based robust control: guaranteeing stability while improving performance</strong></a><br>
       Felix Berkenkamp and Angela P. Schoellig<br>
       <em>Proc. of the Machine Learning in Planning and Control of Robot Motion Workshop at the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</em></li>
   <li><a href="https://doi.org/10.1109/CDC.2014.7039947"><strong>Design of norm-optimal iterative learning controllers: the effect of an iteration-domain Kalman filter for disturbance estimation</strong></a><br>
@@ -836,7 +739,7 @@
       <em>Controls and Art</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2013</h2>
 <h3>Journal Articles</h3>
@@ -858,7 +761,7 @@
       <em>PhD thesis, Diss. ETH No. 20593, Institute for Dynamic Systems and Control, ETH Zurich</em> <strong>[Awards: ETH Medal, Dimitris N. Chorafas Foundation Prize]</strong></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2012</h2>
 <h3>Journal Articles</h3>
@@ -892,7 +795,7 @@
       <em>Video Submission, AI and Robotics Multimedia Fair, Conference on Artificial Intelligence (AI), Assn. of the Advancement of Artificial Intelligence (AAAI)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2011</h2>
 <h3>Conference Papers</h3>
@@ -911,7 +814,7 @@
       <em>Video Submission, in Proc. of the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2010</h2>
 <h3>Conference Papers</h3>
@@ -930,17 +833,17 @@
       <em>Proc. of the IEEE International Conference on Robotics and Automation (ICRA)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2009</h2>
 <h3>Conference Papers</h3>
 <ol>
-  <li><strong>Optimization-based iterative learning control for trajectory tracking</strong><br>
+  <li><a href="http://ieeexplore.ieee.org/xpl/articleDetails.jsp?reload=true&amp;arnumber=7074619"><strong>Optimization-based iterative learning control for trajectory tracking</strong></a><br>
       Angela P. Schoellig and Raffaello D'Andrea<br>
       <em>Proc. of the European Control Conference (ECC)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2008</h2>
 <h3>Conference Papers</h3>
@@ -951,12 +854,12 @@
 </ol>
 <h3>Talks, Posters and Videos</h3>
 <ol>
-  <li><strong>Learning through experience &#8211; Optimizing performance by repetition</strong><br>
+  <li><a href="http://www.learning-robots.de/pmwiki.php/TC/IROS2008"><strong>Learning through experience &#8211; Optimizing performance by repetition</strong></a><br>
       Angela P. Schoellig and Raffaello D'Andrea<br>
       <em>Abstract and Poster, in Proc. of the Robotics Challenges for Machine Learning Workshop at the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2007</h2>
 <h3>Conference Papers</h3>
@@ -964,7 +867,7 @@
   <li><a href="https://doi.org/10.1109/CDC.2007.4434952"><strong>A hybrid Bellman equation for systems with regional dynamics</strong></a><br>
       Angela P. Schoellig, Peter E. Caines, Magnus Egerstedt, and Roland P. Malham&#233;<br>
       <em>Proc. of the IEEE Conference on Decision and Control (CDC)</em></li>
-  <li><strong>Topology-Dependent Stability of a Network of Dynamical Systems with Communication Delays</strong><br>
+  <li><a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=7068977"><strong>Topology-Dependent Stability of a Network of Dynamical Systems with Communication Delays</strong></a><br>
       Angela P. Schoellig, Ulrich M&#252;nz, and Frank Allg\&#7813;er<br>
       <em>Proc. of the European Control Conference (ECC)</em></li>
 </ol>
@@ -976,12 +879,12 @@
 </ol>
 <h3>Theses</h3>
 <ol>
-  <li><strong>Optimal control of hybrid systems with regional dynamics</strong><br>
+  <li><a href="http://hdl.handle.net/1853/19874"><strong>Optimal control of hybrid systems with regional dynamics</strong></a><br>
       Angela P. Schoellig<br>
       <em>Master's thesis, Georgia Institute of Technology</em></li>
 </ol>
 
-<p>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</p>
+<div class="ce-div"></div>
 
 <h2>2006</h2>
 <h3>Theses</h3>
