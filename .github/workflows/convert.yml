@@ -1,0 +1,59 @@
+name: Convert BibTeX to HTML List
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs automatically once every day at midnight
+  workflow_dispatch: # Allows manual triggers from the Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: pip install bibtexparser
+
+      - name: Fetch and Convert BibTeX
+        run: |
+          python -c '
+          import urllib.request, bibtexparser
+          from collections import defaultdict
+
+          url = "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib"
+          req = urllib.request.urlopen(url)
+          bib_database = bibtexparser.loads(req.read().decode("utf-8"))
+
+          # Group publications by year
+          by_year = defaultdict(list)
+          for entry in bib_database.entries:
+              year = entry.get("year", "Other")
+              by_year[year].append(entry)
+
+          # Generate structured HTML
+          with open("index.html", "w", encoding="utf-8") as f:
+              f.write("<div class=\"publications-container\">\n")
+              for year in sorted(by_year.keys(), reverse=True):
+                  f.write(f"  <h3>{year}</h3>\n  <ul class=\"publication-list\">\n")
+                  for entry in by_year[year]:
+                      author = entry.get("author", "Unknown").replace("\n", " ")
+                      title = entry.get("title", "Untitled").replace("{", "").replace("}", "")
+                      venue = entry.get("journal", entry.get("booktitle", ""))
+                      url = entry.get("url", entry.get("doi", ""))
+                      
+                      title_html = f"<a href=\"{url}\">{title}</a>" if url else title
+                      venue_html = f" — <em>{venue}</em>" if venue else ""
+                      
+                      f.write(f"    <li><strong>{title_html}</strong><br/>{author}{venue_html}</li>\n")
+                  f.write("  </ul>\n")
+              f.write("</div>\n")
+          '
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
