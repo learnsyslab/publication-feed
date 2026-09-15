@@ -15,33 +15,78 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Pandoc & BibTool
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: pip install bibtexparser
+
+      - name: Fetch, Clean, and Sort BibTeX
         run: |
-          sudo apt-get update
-          sudo apt-get install -y pandoc bibtool
+          cat << 'EOF' > parse_bib.py
+          import urllib.request
+          import bibtexparser
+          from collections import defaultdict
+          import re
 
-      - name: Fetch, Sanitize, and Convert BibTeX
-        run: |
-          # 1. Download raw BibTeX file
-          curl -sL -A "Mozilla/5.0" "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib" -o raw_library.bib
+          url = "https://www.dynsyslab.org/wp-content/papercite-data/bib/schoellig-library.bib"
+          req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
 
-          # 2. Sanitize and repair BibTeX syntax errors
-          bibtool -r keep.stuff -i raw_library.bib -o clean_library.bib || true
+          with urllib.request.urlopen(req) as response:
+              bib_text = response.read().decode('utf-8', errors='ignore')
 
-          # 3. Create a markdown file referencing all entries
-          echo '---' > refs.md
-          echo 'bibliography: clean_library.bib' >> refs.md
-          echo 'nocite: "@*"' >> refs.md
-          echo '---' >> refs.md
-          echo '# Publications' >> refs.md
+          # Loose parser configuration to handle malformed entries gracefully
+          parser = bibtexparser.bparser.BibTexParser(common_strings=True, ignore_errors=True)
+          bib_db = bibtexparser.loads(bib_text, parser=parser)
 
-          # 4. Convert to HTML using Pandoc's built-in citeproc
-          pandoc refs.md --citeproc -t html -o index.html
+          def clean_text(text):
+              if not text:
+                  return ""
+              # Remove LaTeX braces and clean whitespace
+              text = re.sub(r'[\{\}]', '', text)
+              text = re.sub(r'\s+', ' ', text).strip()
+              return text
+
+          by_year = defaultdict(list)
+          for entry in bib_db.entries:
+              year = clean_text(entry.get("year", "Other"))
+              by_year[year].append(entry)
+
+          with open("index.html", "w", encoding="utf-8") as f:
+              f.write('<div class="publications-feed" style="font-family: sans-serif; line-height: 1.6;">\n')
+              
+              # Sort years descending (newest first)
+              for year in sorted(by_year.keys(), reverse=True):
+                  f.write(f'  <h2 style="margin-top: 1.5em; border-bottom: 2px solid #ccc; padding-bottom: 0.2em;">{year}</h2>\n')
+                  f.write('  <ul style="list-style-type: none; padding-left: 0;">\n')
+                  
+                  for entry in by_year[year]:
+                      title = clean_text(entry.get("title", "Untitled"))
+                      author = clean_text(entry.get("author", "Unknown"))
+                      venue = clean_text(entry.get("journal", entry.get("booktitle", "")))
+                      url = entry.get("url", entry.get("doi", "")).strip()
+
+                      # Uniform layout formatting
+                      title_html = f'<a href="{url}" target="_blank" style="text-decoration: none; color: #0056b3; font-weight: bold;">{title}</a>' if url else f'<strong>{title}</strong>'
+                      venue_html = f' — <em>{venue}</em>' if venue else ""
+                      
+                      f.write(f'    <li style="margin-bottom: 1em; padding-bottom: 0.5em; border-bottom: 1px dashed #eee;">\n')
+                      f.write(f'      <div>{title_html}</div>\n')
+                      f.write(f'      <div style="color: #444; font-size: 0.95em;">{author}{venue_html}</div>\n')
+                      f.write(f'    </li>\n')
+                      
+                  f.write('  </ul>\n')
+                  
+              f.write('</div>\n')
+          EOF
+          python parse_bib.py
 
       - name: Commit and Push HTML
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Auto-update publications HTML" || exit 0
+          git commit -m "Update clean publication feed" || exit 0
           git push
