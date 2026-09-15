@@ -57,19 +57,13 @@ jobs:
           # Settings
           # ----------------------------------------------------------------------
           HIGHLIGHT = ["Schoellig", "Schollig", "Sch\u00f6llig"]  # bolded in author lists
-          SHOW_DOI = True          # DOI shown as plain text (never as a link)
-          SHOW_META = True         # "213 publications - updated ..." line at the top
-          IMPORTANT = True         # append !important so a strict CMS theme cannot override
+          SHOW_DOI = True       # DOI as plain text, never a link
+          SHOW_META = True      # "213 publications, updated ..." line at the top
+          LIST_TAG = "ol"       # "ol" for numbered entries, "ul" for bullets
+          USE_SMALL = True      # wrap the DOI line in <small>
+          ASCII_ONLY = True     # emit accents as &#nnn; so encoding can never break
           INPUT_FILE = "clean_library.bib"
           OUTPUT_FILE = "index.html"
-
-          # Palette
-          INK = "#1c1c1e"
-          MUTED = "#5f6368"
-          ACCENT = "#0b4f8a"
-          RULE = "#e3e5e8"
-          FONT = ("-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,"
-                  "Helvetica,Arial,sans-serif")
 
           # Section headings, in the order they should appear inside each year
           TYPE_ORDER = [
@@ -87,71 +81,14 @@ jobs:
 
 
           # ----------------------------------------------------------------------
-          # Inline-style helper
-          # ----------------------------------------------------------------------
-          def st(*declarations):
-              """Build a style="..." attribute from 'prop:value' strings."""
-              out = []
-              for d in declarations:
-                  d = d.strip().rstrip(";")
-                  if not d:
-                      continue
-                  out.append(d + " !important" if IMPORTANT else d)
-              return ' style="%s"' % ";".join(out)
-
-
-          S_WRAP = st(
-              "font-family:" + FONT,
-              "color:" + INK,
-              "line-height:1.55",
-              "font-size:16px",
-              "max-width:60em",
-              "margin:0",
-              "padding:0",
-          )
-          S_META = st(
-              "margin:0 0 2em", "padding:0", "font-size:0.8em", "color:" + MUTED,
-              "letter-spacing:0.06em", "text-transform:uppercase",
-          )
-          S_YEAR = st("margin:0 0 2.4em", "padding:0")
-          S_YEAR_H = st(
-              "margin:0 0 0.9em", "padding:0 0 0.25em", "font-family:" + FONT,
-              "font-size:1.5em", "font-weight:700", "color:" + ACCENT,
-              "border:0", "border-bottom:3px solid #d7e2ec", "text-transform:none",
-          )
-          S_GROUP = st("margin:0 0 1.5em", "padding:0")
-          S_GROUP_H = st(
-              "margin:0 0 0.6em", "padding:0", "font-family:" + FONT, "font-size:0.78em",
-              "font-weight:700", "letter-spacing:0.12em", "text-transform:uppercase",
-              "color:" + MUTED, "border:0",
-          )
-          S_LIST = st("list-style:decimal outside", "margin:0", "padding:0 0 0 2.1em")
-          S_ITEM = st(
-              "margin:0 0 0.8em", "padding:0 0 0.7em", "border-bottom:1px solid " + RULE,
-          )
-          S_ITEM_LAST = st("margin:0", "padding:0", "border:0")
-          S_TITLE = st("margin:0 0 0.15em", "font-weight:600", "font-size:1.02em")
-          S_AUTHORS = st("margin:0 0 0.1em", "font-size:0.94em", "color:#3b3f45")
-          S_VENUE = st("margin:0", "font-size:0.92em", "color:" + MUTED)
-          S_EXTRA = st("margin:0.35em 0 0", "font-size:0.78em", "color:" + MUTED)
-          S_TAG = st(
-              "display:inline-block", "margin:0 0.5em 0 0", "padding:0.12em 0.55em",
-              "border-radius:3px", "background:#eef2f6", "color:#41586f",
-              "font-weight:600", "letter-spacing:0.02em",
-          )
-          S_TAG_AWARD = st(
-              "display:inline-block", "margin:0 0.5em 0 0", "padding:0.12em 0.55em",
-              "border-radius:3px", "background:#fdf1dc", "color:#8a5a12",
-              "font-weight:600", "letter-spacing:0.02em",
-          )
-          S_DOI = st("word-break:break-word")
-
-
-          # ----------------------------------------------------------------------
           # Text helpers
           # ----------------------------------------------------------------------
           def esc(text):
-              return escape(text, quote=False)
+              """Escape HTML, then optionally reduce to pure ASCII entities."""
+              text = escape(text, quote=False)
+              if ASCII_ONLY:
+                  text = "".join(c if ord(c) < 128 else "&#%d;" % ord(c) for c in text)
+              return text
 
 
           def clean_text(text):
@@ -266,18 +203,18 @@ jobs:
               total += 1
 
           # ----------------------------------------------------------------------
-          # Render: inline styles only, no <style>, no classes, no pseudo-elements
+          # Render: raw semantic HTML only.
+          # No <style>, no style attributes, no classes, no ids, no links.
+          # Tags used: h2, h3, ol/ul, li, p, strong, em, small, br
           # ----------------------------------------------------------------------
           with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-              f.write("<div%s>\n" % S_WRAP)
 
               if SHOW_META:
-                  f.write("  <p%s>%d publications &middot; updated %s</p>\n"
-                          % (S_META, total, date.today().strftime("%d %B %Y")))
+                  line = "%d publications, updated %s" % (total, date.today().strftime("%d %B %Y"))
+                  f.write("<p>%s</p>\n" % (("<small>%s</small>" % esc(line)) if USE_SMALL else esc(line)))
 
               for year in sorted(by_year.keys(), key=year_key, reverse=True):
-                  f.write("  <div%s>\n" % S_YEAR)
-                  f.write("    <h2%s>%s</h2>\n" % (S_YEAR_H, esc(year)))
+                  f.write("\n<h2>%s</h2>\n" % esc(year))
 
                   groups = sorted(by_year[year].items(), key=lambda kv: TYPE_RANK.get(kv[0], 99))
                   merged = []
@@ -289,42 +226,44 @@ jobs:
                           merged.append((label, list(entries)))
 
                   for label, entries in merged:
-                      f.write("    <div%s>\n" % S_GROUP)
-                      f.write("      <h3%s>%s</h3>\n" % (S_GROUP_H, esc(label)))
-                      f.write("      <ol%s>\n" % S_LIST)
+                      f.write("<h3>%s</h3>\n" % esc(label))
+                      f.write("<%s>\n" % LIST_TAG)
 
-                      for i, entry in enumerate(entries):
+                      for entry in entries:
                           etype = entry.get("ENTRYTYPE", "misc").lower()
                           title = esc(clean_text(entry.get("title", "Untitled")))
                           authors = fmt_authors(entry.get("author", "") or entry.get("editor", ""))
                           venue = build_venue(entry, etype)
 
-                          extra = []
                           note = clean_text(entry.get("note", ""))
                           if note and len(note) < 120:
-                              award = any(w in note.lower() for w in ("award", "medal", "prize"))
-                              extra.append("<span%s>%s</span>"
-                                           % (S_TAG_AWARD if award else S_TAG, esc(note)))
+                              if any(w in note.lower() for w in ("award", "medal", "prize")):
+                                  venue_suffix = " <strong>[%s]</strong>" % esc(note)
+                              else:
+                                  venue_suffix = " [%s]" % esc(note)
+                          else:
+                              venue_suffix = ""
+
                           doi = clean_text(entry.get("doi", ""))
                           if SHOW_DOI and doi:
                               doi = re.sub(r"^https?://(dx\.)?doi\.org/", "", doi)
-                              extra.append("<span%s>DOI: %s</span>" % (S_DOI, esc(doi)))
+                              doi_line = "DOI: " + esc(doi)
+                              if USE_SMALL:
+                                  doi_line = "<small>%s</small>" % doi_line
+                          else:
+                              doi_line = ""
 
-                          last = (i == len(entries) - 1)
-                          f.write("        <li%s>\n" % (S_ITEM_LAST if last else S_ITEM))
-                          f.write("          <div%s>%s</div>\n" % (S_TITLE, title))
+                          lines = ["<strong>%s</strong>" % title]
                           if authors:
-                              f.write("          <div%s>%s</div>\n" % (S_AUTHORS, authors))
-                          if venue:
-                              f.write("          <div%s>%s</div>\n" % (S_VENUE, venue))
-                          if extra:
-                              f.write("          <div%s>%s</div>\n" % (S_EXTRA, " ".join(extra)))
-                          f.write("        </li>\n")
+                              lines.append(authors)
+                          if venue or venue_suffix:
+                              lines.append(venue + venue_suffix)
+                          if doi_line:
+                              lines.append(doi_line)
 
-                      f.write("      </ol>\n")
-                      f.write("    </div>\n")
-                  f.write("  </div>\n")
-              f.write("</div>\n")
+                          f.write("  <li>%s</li>\n" % "<br>\n      ".join(lines))
+
+                      f.write("</%s>\n" % LIST_TAG)
 
           print("Wrote %s with %d entries across %d years." % (OUTPUT_FILE, total, len(by_year)))
           EOF
